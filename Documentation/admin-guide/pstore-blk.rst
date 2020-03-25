@@ -160,6 +160,15 @@ A non-block device driver uses ``register_pstore_device`` with
 .. kernel-doc:: fs/pstore/blk.c
    :export:
 
+A non-block device driver uses ``register_pstore_device`` with
+``struct pstore_device_info`` to register to pstore/blk.
+
+.. kernel-doc:: fs/pstore/blk.c
+   :identifiers: register_pstore_device
+
+.. kernel-doc:: include/linux/pstore_blk.h
+   :identifiers: pstore_device_info
+
 Compression and header
 ----------------------
 
