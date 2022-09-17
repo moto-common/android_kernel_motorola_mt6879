@@ -114,6 +114,37 @@ void connectivity_export_conap_scp_deinit(void)
 }
 EXPORT_SYMBOL(connectivity_export_conap_scp_deinit);
 
+void connectivity_export_conap_scp_state_change(enum conn_event_type type)
+{
+	pr_info("[%s] type=[%d]", __func__, type);
+	mutex_lock(&conn_state_notify_mutex);
+	blocking_notifier_call_chain(&conn_state_notifier_list, type, NULL);
+	mutex_unlock(&conn_state_notify_mutex);
+}
+EXPORT_SYMBOL(connectivity_export_conap_scp_state_change);
+
+/* */
+static void (*g_conap_scp_cmd_handler)(int drv_type, int cmd, int param);
+
+void connectivity_register_cmd_handler(void (*cmd_hdlr)(int drv_type, int cmd, int param))
+{
+	g_conap_scp_cmd_handler = cmd_hdlr;
+}
+EXPORT_SYMBOL(connectivity_register_cmd_handler);
+
+void connectivity_unregister_cmd_handler(void)
+{
+	g_conap_scp_cmd_handler = NULL;
+}
+EXPORT_SYMBOL(connectivity_unregister_cmd_handler);
+
+void connectivity_export_conap_scp_trigger_cmd(enum conn_hif_dbg_drv_type drv_type,
+						enum conn_hif_dbg_cmd cmd, int param)
+{
+	if (g_conap_scp_cmd_handler)
+		(*g_conap_scp_cmd_handler)(drv_type, cmd, param);
+}
+EXPORT_SYMBOL(connectivity_export_conap_scp_trigger_cmd);
 
 void connectivity_register_state_notifier(struct notifier_block *nb)
 {
