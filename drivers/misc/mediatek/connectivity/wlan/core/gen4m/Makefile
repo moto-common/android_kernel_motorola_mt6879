@@ -59,6 +59,7 @@ endif
 ifndef TOP
     TOP := $(srctree)/..
 endif
+WLAN_CORE_DIR := $(srctree)/drivers/misc/mediatek/connectivity/wlan/core/gen4m
 $(info os option: $(os))
 
 # script for check the kernel version condition
@@ -908,7 +909,7 @@ ifeq ($(CONFIG_MTK_WIFI_CONNV3_SUPPORT), y)
         CONFIG_MTK_WIFI_CONNV3_PATH ?= $(src)/../conninfra
         KBUILD_EXTRA_SYMBOLS += $(CONFIG_MTK_WIFI_CONNV3_PATH)/Module.symvers
     else
-        CONFIG_MTK_WIFI_CONNV3_PATH ?= $(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra
+        CONFIG_MTK_WIFI_CONNV3_PATH ?= $(srctree)/drivers/misc/mediatek/connectivity/conninfra
     endif
     $(info $$CONFIG_MTK_WIFI_CONNV3_PATH is [${CONFIG_MTK_WIFI_CONNV3_PATH}])
     ccflags-y += -I$(CONFIG_MTK_WIFI_CONNV3_PATH)/include
@@ -917,43 +918,43 @@ ifeq ($(CONFIG_MTK_WIFI_CONNV3_SUPPORT), y)
     ccflags-y += -I$(CONFIG_MTK_WIFI_CONNV3_PATH)/conn_drv/connv3/debug_utility/include
     ccflags-y += -I$(CONFIG_MTK_WIFI_CONNV3_PATH)/conn_drv/connv3/debug_utility/connsyslog
 
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/include
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/include
 else ifeq ($(CONFIG_MTK_WIFI_CONNINFRA_SUPPORT), y)
     CONFIG_WIFI_COREDUMP_SUPPORT=y
     ccflags-y += -DCFG_SUPPORT_CONNINFRA=1
     ccflags-y += -DCFG_ANDORID_CONNINFRA_SUPPORT=1
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/include
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/include
     ccflags-y += -DCFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT=1
     ccflags-y += -DCFG_MTK_CONNSYS_DEDICATED_LOG_PATH
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/include
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/platform/include
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/base/include
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/include
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/platform/include
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/base/include
 
     # conninfra path
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/include
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/connsyslog
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/coredump
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/coredump/platform/include
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/debug_utility/metlog
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/debug_utility
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/debug_utility/include
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/debug_utility/connsyslog
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/debug_utility/coredump
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/debug_utility/coredump/platform/include
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/debug_utility/metlog
 
     # connv2 path
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/include
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/connsyslog
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/coredump
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/coredump/platform/include
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/conninfra/conn_drv/connv2/debug_utility/metlog
-    ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/wlan/adaptor
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/conn_drv/connv2/debug_utility
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/conn_drv/connv2/debug_utility/include
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/conn_drv/connv2/debug_utility/connsyslog
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/conn_drv/connv2/debug_utility/coredump
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/conn_drv/connv2/debug_utility/coredump/platform/include
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/conn_drv/connv2/debug_utility/metlog
+    ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/wlan/adaptor
 else
     CONFIG_WIFI_COREDUMP_SUPPORT=n
     ccflags-y += -DCFG_SUPPORT_CONNINFRA=0
     ccflags-y += -DCFG_ANDORID_CONNINFRA_SUPPORT=0
     ccflags-y += -DCFG_ANDORID_CONNINFRA_COREDUMP_SUPPORT=0
     ifeq ($(WMT_SUPPORT), y)
-        ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/common_main/include
-        ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/common_main/linux/include
-        ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/debug_utility
+        ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/include
+        ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/linux/include
+        ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common/debug_utility
         ifeq ($(CONFIG_MTK_CONN_LTE_IDC_SUPPORT),y)
             ccflags-y += -DWMT_IDC_SUPPORT=1
         else
@@ -1251,6 +1252,7 @@ else
     ccflags-y += -DCFG_ENABLE_GKI_SUPPORT=0
 endif
 
+MODULE_NAME := wlan_drv_gen4m_$(WLAN_CHIP_ID)
 ifeq ($(MODULE_NAME),)
 MODULE_NAME := wlan_$(shell echo $(strip $(WLAN_CHIP_ID)) | tr A-Z a-z)_$(CONFIG_MTK_COMBO_WIFI_HIF)
 endif
@@ -1265,13 +1267,13 @@ ifeq ($(CONFIG_CHIP_RESET_SUPPORT), n)
 endif
 
 ccflags-y += -DDBG=0
-ccflags-y += -I$(src)/os -I$(src)/os/$(os)/include
-ccflags-y += -I$(src)/include -I$(src)/include/nic -I$(src)/include/mgmt -I$(src)/include/chips
+ccflags-y += -I$(WLAN_CORE_DIR)/os -I$(WLAN_CORE_DIR)/os/$(os)/include
+ccflags-y += -I$(WLAN_CORE_DIR)/include -I$(WLAN_CORE_DIR)/include/nic -I$(WLAN_CORE_DIR)/include/mgmt -I$(WLAN_CORE_DIR)/include/chips
 ifeq ($(CONFIG_MTK_WIFI_NAN), y)
-ccflags-y += -I$(src)/include/nan -I$(src)/include/nan/wpa_supp
+ccflags-y += -I$(WLAN_CORE_DIR)/include/nan -I$(WLAN_CORE_DIR)/include/nan/wpa_supp
 endif
 ifeq ($(CFG_SUPPORT_WIFI_SYSDVT), 1)
-ccflags-y += -I$(src)/include/dvt
+ccflags-y += -I$(WLAN_CORE_DIR)/include/dvt
 endif
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/include/
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/
@@ -1283,7 +1285,7 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/power_throttling/
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common
 ccflags-y += -I$(srctree)/drivers/devfreq/
 ccflags-y += -I$(srctree)/net
-ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/connfem/include/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/connfem/include/
 
 ifeq ($(CONFIG_MTK_WIFI_CCCI_SUPPORT), y)
 CONFIG_MTK_ECCCI_DRIVER := y
@@ -1317,22 +1319,22 @@ ccflags-y += -DCFG_ADVANCED_80211_MLO=0
 endif
 
 ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), sdio)
-ccflags-y += -I$(src)/os/$(os)/hif/sdio/include
+ccflags-y += -I$(WLAN_CORE_DIR)/os/$(os)/hif/sdio/include
 else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), pcie)
-ccflags-y += -I$(src)/os/$(os)/hif/common/include
-ccflags-y += -I$(src)/os/$(os)/hif/pcie/include
+ccflags-y += -I$(WLAN_CORE_DIR)/os/$(os)/hif/common/include
+ccflags-y += -I$(WLAN_CORE_DIR)/os/$(os)/hif/pcie/include
 ifneq ($(findstring 3_0,$(MTK_COMBO_CHIP)),)
-ccflags-y += -I$(src)/include/chips/coda/soc3_0
+ccflags-y += -I$(WLAN_CORE_DIR)/include/chips/coda/soc3_0
 endif
 else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), axi)
-ccflags-y += -I$(src)/os/$(os)/hif/common/include
-ccflags-y += -I$(src)/os/$(os)/hif/axi/include
+ccflags-y += -I$(WLAN_CORE_DIR)/os/$(os)/hif/common/include
+ccflags-y += -I$(WLAN_CORE_DIR)/os/$(os)/hif/axi/include
 else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), usb)
-ccflags-y += -I$(src)/os/$(os)/hif/usb/include
+ccflags-y += -I$(WLAN_CORE_DIR)/os/$(os)/hif/usb/include
 else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), ut)
-ccflags-y += -I$(src)/test -I$(src)/test/lib/include -I$(src)/test/testcases -I$(src)/test/lib/hif
+ccflags-y += -I$(WLAN_CORE_DIR)/test -I$(WLAN_CORE_DIR)/test/lib/include -I$(WLAN_CORE_DIR)/test/testcases -I$(WLAN_CORE_DIR)/test/lib/hif
 else ifeq ($(CONFIG_MTK_COMBO_WIFI_HIF), none)
-ccflags-y += -I$(src)/os/$(os)/hif/none/include
+ccflags-y += -I$(WLAN_CORE_DIR)/os/$(os)/hif/none/include
 endif
 
 ifneq ($(PLATFORM_FLAGS), )
@@ -1812,7 +1814,7 @@ endif
 # ---------------------------------------------------
 ifneq ($(PLAT_DIR),)
 
-PLAT_PRIV_C = $(src)/$(PLAT_DIR)plat_priv.c
+PLAT_PRIV_C = $(WLAN_CORE_DIR)/$(PLAT_DIR)plat_priv.c
 
 # search path (out of kernel tree)
 IS_EXIST_PLAT_PRIV_C := $(wildcard $(PLAT_PRIV_C))
@@ -1853,10 +1855,10 @@ endif
 ifeq ($(MTK_WLAN_SERVICE), yes)
 ccflags-y += -DCONFIG_WLAN_SERVICE=1
 ccflags-y += -DCONFIG_TEST_ENGINE_OFFLOAD=1
-ccflags-y += -I$(src)/$(SERVICE_DIR)include
-ccflags-y += -I$(src)/$(SERVICE_DIR)service/include
-ccflags-y += -I$(src)/$(SERVICE_DIR)glue/osal/include
-ccflags-y += -I$(src)/$(SERVICE_DIR)glue/hal/include
+ccflags-y += -I$(WLAN_CORE_DIR)/$(SERVICE_DIR)include
+ccflags-y += -I$(WLAN_CORE_DIR)/$(SERVICE_DIR)service/include
+ccflags-y += -I$(WLAN_CORE_DIR)/$(SERVICE_DIR)glue/osal/include
+ccflags-y += -I$(WLAN_CORE_DIR)/$(SERVICE_DIR)glue/hal/include
 $(info $$CCFLAG is [{$(ccflags-y)}])
 SERVICE_OBJS := $(SERVICE_DIR)agent/agent.o \
                 $(SERVICE_DIR)service/service_test.o \
@@ -1882,7 +1884,7 @@ $(MODULE_NAME)-objs  += $(NAN_OBJS)
 $(MODULE_NAME)-objs  += $(NAN_SEC_OBJS)
 
 ifneq ($(findstring UT_TEST_MODE,$(MTK_COMBO_CHIP)),)
-include $(src)/test/ut.make
+include $(WLAN_CORE_DIR)/test/ut.make
 endif
 
 #
