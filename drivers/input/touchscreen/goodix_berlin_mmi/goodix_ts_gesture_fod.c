@@ -288,13 +288,10 @@ static ssize_t gsx_gesture_data_show(struct goodix_ext_module *module,
 				char *buf)
 {
 	ssize_t count;
-	struct gesture_module *gsx = module->priv_data;
 
-	if (!gsx)
-		return -EIO;
 	read_lock(&gsx_gesture->rwlock);
 	count = scnprintf(buf, PAGE_SIZE, "gesture type code:0x%x\n",
-			gsx->ts_core->gesture_type);
+			gsx_gesture->gesture_type);
 	read_unlock(&gsx_gesture->rwlock);
 
 	return count;
@@ -529,7 +526,7 @@ re_send_ges_cmd:
 #if defined(PRODUCT_MIAMI)
 	if (hw_ops->gesture(cd, 0x80))
 #else
-	if (hw_ops->gesture(cd, cd->gesture_type))
+	if (hw_ops->gesture(cd, 0))
 #endif
 		ts_info("warning: failed re_send gesture cmd");
 gesture_ist_exit:
