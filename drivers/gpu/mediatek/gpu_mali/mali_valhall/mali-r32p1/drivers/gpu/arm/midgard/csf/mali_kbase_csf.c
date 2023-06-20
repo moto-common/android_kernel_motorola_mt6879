@@ -354,7 +354,7 @@ int kbase_csf_alloc_command_stream_user_pages(struct kbase_context *kctx,
 
 	ret = kbase_mem_pool_alloc_pages(
 				&kctx->mem_pools.small[KBASE_MEM_GROUP_CSF_IO],
-				num_pages, queue->phys, false);
+				num_pages, queue->phys, false, kctx->task);
 
 	if (ret != num_pages)
 		goto phys_alloc_failed;
@@ -1139,7 +1139,7 @@ static int create_normal_suspend_buffer(struct kbase_context *const kctx,
 	/* Get physical page for a normal suspend buffer */
 	err = kbase_mem_pool_alloc_pages(
 			&kctx->mem_pools.small[KBASE_MEM_GROUP_CSF_FW],
-			nr_pages, &s_buf->phy[0], false);
+			nr_pages, &s_buf->phy[0], false,kctx->task);
 
 	if (err < 0)
 		goto phy_pages_alloc_failed;
@@ -3196,33 +3196,6 @@ static void order_job_irq_clear_with_iface_mem_read(void)
 #endif
 }
 
-static void order_job_irq_clear_with_iface_mem_read(void)
-{
-	/* Ensure that write to the JOB_IRQ_CLEAR is ordered with regards to the
-	 * read from interface memory. The ordering is needed considering the way
-	 * FW & Kbase writes to the JOB_IRQ_RAWSTAT and JOB_IRQ_CLEAR registers
-	 * without any synchronization. Without the barrier there is no guarantee
-	 * about the ordering, the write to IRQ_CLEAR can take effect after the read
-	 * from interface memory and that could cause a problem for the scenario where
-	 * FW sends back to back notifications for the same CSG for events like
-	 * SYNC_UPDATE and IDLE, but Kbase gets a single IRQ and observes only the
-	 * first event. Similar thing can happen with glb events like CFG_ALLOC_EN
-	 * acknowledgment and GPU idle notification.
-	 *
-	 *       MCU                                    CPU
-	 *  ---------------                         ----------------
-	 *  Update interface memory                 Write to IRQ_CLEAR to clear current IRQ
-	 *  <barrier>                               <barrier>
-	 *  Write to IRQ_RAWSTAT to raise new IRQ   Read interface memory
-	 */
-#if KERNEL_VERSION(5, 10, 0) <= LINUX_VERSION_CODE
-	__iomb();
-#else
-	/* CPU and GPU would be in the same Outer shareable domain */
-	dmb(osh);
-#endif
-}
-
 void kbase_csf_interrupt(struct kbase_device *kbdev, u32 val)
 {
 	unsigned long flags;
@@ -3365,7 +3338,7 @@ int kbase_csf_doorbell_mapping_init(struct kbase_device *kbdev)
 
 	ret = kbase_mem_pool_alloc_pages(
 		&kbdev->mem_pools.small[KBASE_MEM_GROUP_CSF_FW],
-		1, &phys, false);
+		1, &phys, false,NULL);
 
 	if (ret <= 0) {
 		fput(filp);
@@ -3401,7 +3374,7 @@ int kbase_csf_setup_dummy_user_reg_page(struct kbase_device *kbdev)
 
 	ret = kbase_mem_pool_alloc_pages(
 		&kbdev->mem_pools.small[KBASE_MEM_GROUP_CSF_FW], 1, &phys,
-		false);
+		false,NULL);
 
 	if (ret <= 0)
 		return ret;
