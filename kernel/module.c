@@ -4006,10 +4006,6 @@ static int load_module(struct load_info *info, const char __user *uargs,
 		goto free_copy;
 	}
 
-	//FIXME
-	flags |= MODULE_INIT_IGNORE_MODVERSIONS;
-	flags |= MODULE_INIT_IGNORE_VERMAGIC;
-
 	err = rewrite_section_headers(info, flags);
 	if (err)
 		goto free_copy;
