@@ -1,0 +1,6 @@
+config ETS_FOD_MMI
+	tristate "ETS FPS MMI"
+	default n
+	help
+	  Say Y here to build the ETS FPS MMI driver as a module.
+	  If unsure, say N.

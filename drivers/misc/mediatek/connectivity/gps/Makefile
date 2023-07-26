@@ -69,10 +69,11 @@ MODULE_NAME := gps_drv
 obj-m += $(MODULE_NAME).o
 
 GPS_DRV_CONTROL_LNA := n
-GPS_DL_SUPPORT := n
+GPS_DL_SUPPORT := y
 GPS_DL_HAS_MOCK := n
-GPS_DL_HAS_CONNINFRA_DRV := n
+GPS_DL_HAS_CONNINFRA_DRV := y
 GPS_SRC_FOLDER := $(srctree)/drivers/misc/mediatek/connectivity/gps
+GPS_DL_PLATFORM := v050
 
 ifeq ($(CONFIG_ARCH_MTK_PROJECT),"k6833v1_64_swrgo")
 ccflags-y += -DCONFIG_GPSL5_SUPPORT
@@ -93,10 +94,6 @@ endif
 ifeq ($(CONFIG_MACH_MT6877),y)
 GPS_DL_SUPPORT := y
 GPS_DL_PLATFORM := v030
-endif
-ifeq ($(CONFIG_MACH_MT6879),y)
-GPS_DL_SUPPORT := y
-GPS_DL_PLATFORM := v050
 endif
 ifeq ($(CONFIG_MACH_MT6885),y)
 GPS_DL_SUPPORT := y

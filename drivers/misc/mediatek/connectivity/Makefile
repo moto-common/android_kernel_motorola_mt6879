@@ -18,7 +18,7 @@ ifneq ($(KERNELRELEASE),)
     subdir-ccflags-y += -I$(srctree)/
     subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/include
     subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/clkbuf/src
-    subdir-ccflags-y += -Werror -I$(srctree)/drivers/misc/mediatek/include/mt-plat
+    subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
     subdir-ccflags-y += -I$(srctree)/drivers/mmc/core
     subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/eccci/
     subdir-ccflags-y += -I$(srctree)/drivers/clk/mediatek/
@@ -73,9 +73,9 @@ ifneq ($(KERNELRELEASE),)
 
     # for gen4m options
     export CONFIG_MTK_COMBO_WIFI_HIF=axi
-    export MTK_COMBO_CHIP=SOC2_1X1
-    export BT_PLATFORM=connac1x
-    export WLAN_CHIP_ID=6789
+    export MTK_COMBO_CHIP=CONNAC2X2_SOC7_0
+    export BT_PLATFORM=6879
+    export WLAN_CHIP_ID=6879
     export MTK_ANDROID_WMT=y
     export MTK_ANDROID_EMI=y
     export WIFI_IP_SET=1
@@ -126,12 +126,13 @@ ifneq ($(KERNELRELEASE),)
 
     obj-$(CONFIG_MTK_COMBO) += common/
     obj-$(CONFIG_MTK_COMBO_WIFI) += wlan/adaptor/
-    obj-$(CONFIG_MTK_COMBO_CHIP_CONSYS_6789) += wlan/core/gen4m/
-    obj-$(CONFIG_MTK_BTIF) += bt/mt66xx/wmt/
+    obj-$(CONFIG_MTK_COMBO_CHIP_CONSYS_6879) += wlan/core/gen4m/
+    obj-$(CONFIG_MTK_BTIF) += bt/mt66xx/btif/
+    obj-$(CONFIG_MTK_COMBO_GPS) += gps/
     obj-$(CONFIG_MTK_COMBO_GPS) += gps/gps_pwr/
-    obj-$(CONFIG_MTK_COMBO_GPS) += gps/gps_stp/
     obj-$(CONFIG_MTK_FMRADIO) += fmradio/
     obj-$(CONFIG_MTK_COMBO) += connfem/
+    obj-$(CONFIG_MTK_COMBO) += conninfra/
 
 # Otherwise we were called directly from the command line;
 # invoke the kernel build system.
