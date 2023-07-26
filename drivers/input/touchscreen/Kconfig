@@ -1393,8 +1393,9 @@ config TOUCHSCREEN_HIMAX_CHIPSET
 
           If unsure, say N.
 
-source "drivers/input/touchscreen/hxchipset/Kconfig"
-source "drivers/input/touchscreen/GT9966/Kconfig"
+source "drivers/input/touchscreen/goodix_berlin_mmi/Kconfig"
+
+source "drivers/input/touchscreen/touchscreen_mmi/Kconfig"
 
 endif
 

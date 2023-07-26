@@ -3,7 +3,7 @@
 
 ###############################################################################
 # Necessary Check
-
+BT_PLATFORM=6879
 ifneq ($(KERNEL_OUT),)
     ccflags-y += -imacros $(KERNEL_OUT)/include/generated/autoconf.h
 endif

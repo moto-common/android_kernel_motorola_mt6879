@@ -22,7 +22,11 @@
 #include <linux/uaccess.h>
 #include <linux/printk.h>
 #include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
+#include <asm/mmu.h>
+#else
 #include <asm/memblock.h>
+#endif
 #include "gps.h"
 
 #ifdef pr_fmt
@@ -143,9 +147,6 @@ void mtk_wcn_consys_gps_memory_reserve(void)
 	gGpsEmiPhyBase = arm_memblock_steal(SZ_1M, SZ_1M);
 #endif
 #else
-	#if EMI_MPU_PROTECTION_IS_READY
-	gGpsEmiPhyBase = gConEmiPhyBase + GPS_EMI_BASE_ADDR_OFFSET;
-	#endif
 #endif
 	if (gGpsEmiPhyBase)
 		GPS_DBG("Con:0x%zx, Gps:0x%zx\n", (size_t)gConEmiPhyBase, (size_t)gGpsEmiPhyBase);
@@ -155,35 +156,6 @@ void mtk_wcn_consys_gps_memory_reserve(void)
 
 INT32 gps_emi_mpu_set_region_protection(INT32 region)
 {
-#if EMI_MPU_PROTECTION_IS_READY
-#if defined(GPS_EMI_NEW_API)
-	struct emimpu_region_t region_info;
-	int emimpu_ret1, emimpu_ret2, emimpu_ret3, emimpu_ret4, emimpu_ret5, emimpu_ret6;
-	/* Set EMI MPU permission */
-	GPS_DBG("emi mpu cfg: region = %d, no protection domain = %d, %d",
-	    region, GPS_DL_EMI_MPU_DOMAIN_AP, GPS_DL_EMI_MPU_DOMAIN_CONN);
-	emimpu_ret1 = mtk_emimpu_init_region(&region_info, region);
-	emimpu_ret2 = mtk_emimpu_set_addr(&region_info, gGpsEmiPhyBase, gGpsEmiPhyBase + GPS_EMI_MPU_SIZE - 1);
-	emimpu_ret3 = mtk_emimpu_set_apc(&region_info, GPS_DL_EMI_MPU_DOMAIN_AP, MTK_EMIMPU_NO_PROTECTION);
-	emimpu_ret4 = mtk_emimpu_set_apc(&region_info, GPS_DL_EMI_MPU_DOMAIN_CONN, MTK_EMIMPU_NO_PROTECTION);
-	emimpu_ret5 = mtk_emimpu_set_protection(&region_info);
-	emimpu_ret6 = mtk_emimpu_free_region(&region_info);
-	GPS_DBG("emi mpu cfg: ret = %d, %d, %d, %d, %d, %d",
-	    emimpu_ret1, emimpu_ret2, emimpu_ret3, emimpu_ret4, emimpu_ret5, emimpu_ret6);
-#else
-	struct emi_region_info_t region_info;
-	/*set MPU for EMI share Memory */
-	GPS_DBG("setting MPU for EMI share memory\n");
-	region_info.start = gGpsEmiPhyBase;
-	region_info.end = gGpsEmiPhyBase + GPS_EMI_MPU_SIZE - 1;
-	region_info.region = region;
-	SET_ACCESS_PERMISSION(region_info.apc, LOCK,
-	FORBIDDEN, FORBIDDEN, FORBIDDEN, FORBIDDEN, FORBIDDEN, FORBIDDEN, FORBIDDEN,
-	FORBIDDEN, FORBIDDEN, FORBIDDEN, FORBIDDEN, FORBIDDEN, FORBIDDEN,
-	NO_PROTECTION, FORBIDDEN, NO_PROTECTION);
-	emi_mpu_set_protection(&region_info);
-#endif
-#endif
 	return 0;
 }
 
@@ -221,10 +193,6 @@ INT32 mtk_wcn_consys_gps_emi_init(void)
 	mtk_wcn_consys_gps_memory_reserve();
 	if (gGpsEmiPhyBase) {
 		/*set MPU for EMI share Memory*/
-		#if EMI_MPU_PROTECTION_IS_READY
-		GPS_DBG("setting MPU for EMI share memory\n");
-		gps_emi_mpu_set_region_protection(GPS_EMI_MPU_REGION);
-		#endif
 		GPS_DBG("get consys start phy address(0x%zx)\n", (size_t)gGpsEmiPhyBase);
 		#if 0
 		/*consys to ap emi remapping register:10001310, cal remapping address*/
@@ -239,9 +207,6 @@ INT32 mtk_wcn_consys_gps_emi_init(void)
 
 		GPS_DBG("GPS_EMI_MAPPING dump(0x%08x)\n",
 			CONSYS_REG_READ(conn_reg.topckgen_base + CONSYS_EMI_MAPPING_OFFSET));
-		#endif
-		#if EMI_MPU_PROTECTION_IS_READY
-		pGpsEmibaseaddr = ioremap(gGpsEmiPhyBase, GPS_EMI_MPU_SIZE);
 		#endif
 		iRet = 1;
 		#if 0
@@ -477,13 +442,13 @@ static void __exit gps_emi_mod_exit(void)
 	GPS_ERR("Done\n");
 }
 
-int mtk_gps_emi_init(void)
+int __init mtk_gps_emi_init(void)
 {
 	GPS_ERR("gps emi mod init begin");
 	return gps_emi_mod_init();
 }
 
-void mtk_gps_emi_exit(void)
+void __exit mtk_gps_emi_exit(void)
 {
 	GPS_ERR("gps emi mod exit begin");
 	return gps_emi_mod_exit();

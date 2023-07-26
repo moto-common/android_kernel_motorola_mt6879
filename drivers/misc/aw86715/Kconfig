@@ -1,0 +1,2 @@
+config MISC_AW86715
+	tristate "Awinic AW86175 Haptics"

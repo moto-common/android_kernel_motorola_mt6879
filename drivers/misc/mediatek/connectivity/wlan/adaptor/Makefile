@@ -1,6 +1,9 @@
 ###############################################################################
 # Necessary Check
 
+CONNAC_VER := 2_0
+MODULE_NAME := wmt_chrdev_wifi_connac2
+
 ifneq ($(KERNEL_OUT),)
     ccflags-y += -imacros $(KERNEL_OUT)/include/generated/autoconf.h
 endif
@@ -8,8 +11,6 @@ endif
 ifndef TOP
     TOP := $(srctree)/..
 endif
-
-MODULE_NAME := wmt_chrdev_wifi
 
 # Force build fail on modpost warning
 KBUILD_MODPOST_FAIL_ON_WARNINGS := y
