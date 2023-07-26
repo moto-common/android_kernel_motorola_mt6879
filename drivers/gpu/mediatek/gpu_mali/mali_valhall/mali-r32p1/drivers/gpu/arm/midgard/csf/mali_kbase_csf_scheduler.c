@@ -3100,6 +3100,17 @@ static void wait_csg_slots_finish_prio_update(struct kbase_device *kbdev)
 	}
 }
 
+static void report_csg_termination(struct kbase_queue_group *const group)
+{
+	struct base_gpu_queue_group_error
+		err = { .error_type = BASE_GPU_QUEUE_GROUP_ERROR_FATAL,
+			.payload = { .fatal_group = {
+					     .status = GPU_EXCEPTION_TYPE_SW_FAULT_2,
+				     } } };
+
+	kbase_csf_add_group_fatal_error(group, &err);
+}
+
 void kbase_csf_scheduler_evict_ctx_slots(struct kbase_device *kbdev,
 		struct kbase_context *kctx, struct list_head *evicted_groups)
 {
@@ -3123,10 +3134,15 @@ void kbase_csf_scheduler_evict_ctx_slots(struct kbase_device *kbdev,
 		if (group && group->kctx == kctx) {
 			bool as_fault;
 
+			dev_vdbg(kbdev->dev, "Evicting group [%d] running on slot [%d] due to reset",
+				group->handle, group->csg_nr);
+
 			term_csg_slot(group);
 			as_fault = cleanup_csg_slot(group);
 			/* remove the group from the scheduler list */
 			sched_evict_group(group, as_fault, false);
+			/* signal Userspace that CSG is being terminated */
+			report_csg_termination(group);
 			/* return the evicted group to the caller */
 			list_add_tail(&group->link, evicted_groups);
 			set_bit(slot, slot_mask);
@@ -3135,6 +3151,15 @@ void kbase_csf_scheduler_evict_ctx_slots(struct kbase_device *kbdev,
 
 	dev_info(kbdev->dev, "Evicting context %d_%d slots: 0x%*pb\n",
 			kctx->tgid, kctx->id, num_groups, slot_mask);
+
+	/* Fatal errors may have been the cause of the GPU reset
+	 * taking place, in which case we want to make sure that
+	 * we wake up the fatal event queue to notify userspace
+	 * only once. Otherwise, we may have duplicate event
+	 * notifications between the time the first notification
+	 * occurs and the time the GPU is reset.
+	 */
+	kbase_event_wakeup(kctx);
 
 	mutex_unlock(&scheduler->lock);
 }
@@ -4190,18 +4215,6 @@ static void schedule_actions(struct kbase_device *kbdev, bool is_tick)
 
 redo_local_tock:
 	scheduler_prepare(kbdev);
-	/* Need to specifically enqueue the GPU idle work if there are no groups
-	 * to schedule despite the runnable groups. This scenario will happen
-	 * if System suspend is done when all groups are idle and and no work
-	 * is submitted for the groups after the System resume.
-	 */
-	if (unlikely(!scheduler->ngrp_to_schedule &&
-				scheduler->total_runnable_grps)) {
-		dev_vdbg(kbdev->dev, "No groups to schedule in the tick");
-		enqueue_gpu_idle_work(scheduler);
-		return;
-	}
-
 	spin_lock_irqsave(&scheduler->interrupt_lock, flags);
 	protm_grp = scheduler->active_protm_grp;
 
@@ -5460,18 +5473,6 @@ out:
 	mutex_unlock(&scheduler->lock);
 }
 
-void kbase_csf_scheduler_pm_suspend_no_lock(struct kbase_device *kbdev)
-{
-	struct kbase_csf_scheduler *scheduler = &kbdev->csf.scheduler;
-
-	if (scheduler->state != SCHED_SUSPENDED) {
-		suspend_active_groups_on_powerdown(kbdev, true);
-		dev_vdbg(kbdev->dev, "Scheduler PM suspend");
-		scheduler_suspend(kbdev);
-		cancel_tick_timer(kbdev);
-	}
-}
-
 void kbase_csf_scheduler_pm_suspend(struct kbase_device *kbdev)
 {
 	struct kbase_csf_scheduler *scheduler = &kbdev->csf.scheduler;
@@ -5487,29 +5488,31 @@ void kbase_csf_scheduler_pm_suspend(struct kbase_device *kbdev)
 	}
 
 	mutex_lock(&scheduler->lock);
-	kbase_csf_scheduler_pm_suspend_no_lock(kbdev);
+
+	if (scheduler->state != SCHED_SUSPENDED) {
+		suspend_active_groups_on_powerdown(kbdev, true);
+		dev_vdbg(kbdev->dev, "Scheduler PM suspend");
+		scheduler_suspend(kbdev);
+		cancel_tick_timer(kbdev);
+	}
 	mutex_unlock(&scheduler->lock);
 
 	kbase_reset_gpu_allow(kbdev);
 }
 KBASE_EXPORT_TEST_API(kbase_csf_scheduler_pm_suspend);
 
-void kbase_csf_scheduler_pm_resume_no_lock(struct kbase_device *kbdev)
+void kbase_csf_scheduler_pm_resume(struct kbase_device *kbdev)
 {
 	struct kbase_csf_scheduler *scheduler = &kbdev->csf.scheduler;
+
+	mutex_lock(&scheduler->lock);
+
 	if (scheduler->total_runnable_grps > 0) {
 		WARN_ON(scheduler->state != SCHED_SUSPENDED);
 		dev_vdbg(kbdev->dev, "Scheduler PM resume");
 		scheduler_wakeup(kbdev, true);
 	}
-}
-
-void kbase_csf_scheduler_pm_resume(struct kbase_device *kbdev)
-{
-	mutex_lock(&kbdev->csf.scheduler.lock);
-
-	kbase_csf_scheduler_pm_resume_no_lock(kbdev);
-	mutex_unlock(&kbdev->csf.scheduler.lock);
+	mutex_unlock(&scheduler->lock);
 }
 KBASE_EXPORT_TEST_API(kbase_csf_scheduler_pm_resume);
 
