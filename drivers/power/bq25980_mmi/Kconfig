@@ -1,0 +1,6 @@
+config BQ25980_MMI
+	tristate "BQ25980 MMI"
+	default n
+	help
+	  Say Y here to build the BQ25980 MMI driver as a module.
+	  If unsure, say N.
