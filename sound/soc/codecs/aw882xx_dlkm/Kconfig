@@ -1,0 +1,14 @@
+config AW_RAMPING_SUPPORT
+	bool "AW Ramping Support"
+	default n
+	help
+	  Say Y here to enable support for AW ramping.
+	  If unsure, say N.
+
+config SND_SOC_AW882XX
+	tristate "AW882XX ALSA SoC Support"
+	default n
+	depends on I2C
+	help
+	  Say Y here to enable support for AW882XX ALSA SoC driver.
+	  If unsure, say N.
