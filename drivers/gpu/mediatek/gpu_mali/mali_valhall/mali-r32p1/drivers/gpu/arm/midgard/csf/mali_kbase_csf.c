@@ -1704,13 +1704,17 @@ static void add_error(struct kbase_context *const kctx,
 
 	spin_lock_irqsave(&kctx->csf.event_lock, flags);
 
-	if (!WARN_ON(!list_empty(&error->link))) {
+	if (list_empty(&error->link)) {
 		error->data = *data;
 		list_add_tail(&error->link, &kctx->csf.error_list);
 		dev_vdbg(kctx->kbdev->dev,
 			"Added error %pK of type %d in context %pK\n",
 			(void *)error, data->type, (void *)kctx);
-	}
+	} else {
+		dev_vdbg(kctx->kbdev->dev,
+			"Error %pK of type %d already pending in context %pK",
+			(void *)error, error->data.type, (void *)kctx);
+ 	}
 
 	spin_unlock_irqrestore(&kctx->csf.event_lock, flags);
 }
@@ -3165,6 +3169,33 @@ static inline void process_protm_exit(struct kbase_device *kbdev, u32 glb_ack)
 	}
 }
 
+static void order_job_irq_clear_with_iface_mem_read(void)
+{
+	/* Ensure that write to the JOB_IRQ_CLEAR is ordered with regards to the
+	 * read from interface memory. The ordering is needed considering the way
+	 * FW & Kbase writes to the JOB_IRQ_RAWSTAT and JOB_IRQ_CLEAR registers
+	 * without any synchronization. Without the barrier there is no guarantee
+	 * about the ordering, the write to IRQ_CLEAR can take effect after the read
+	 * from interface memory and that could cause a problem for the scenario where
+	 * FW sends back to back notifications for the same CSG for events like
+	 * SYNC_UPDATE and IDLE, but Kbase gets a single IRQ and observes only the
+	 * first event. Similar thing can happen with glb events like CFG_ALLOC_EN
+	 * acknowledgment and GPU idle notification.
+	 *
+	 *       MCU                                    CPU
+	 *  ---------------                         ----------------
+	 *  Update interface memory                 Write to IRQ_CLEAR to clear current IRQ
+	 *  <barrier>                               <barrier>
+	 *  Write to IRQ_RAWSTAT to raise new IRQ   Read interface memory
+	 */
+#if KERNEL_VERSION(5, 10, 0) <= LINUX_VERSION_CODE
+	__iomb();
+#else
+	/* CPU and GPU would be in the same Outer shareable domain */
+	dmb(osh);
+#endif
+}
+
 void kbase_csf_interrupt(struct kbase_device *kbdev, u32 val)
 {
 	unsigned long flags;
@@ -3181,6 +3212,7 @@ void kbase_csf_interrupt(struct kbase_device *kbdev, u32 val)
 
 	KBASE_KTRACE_ADD(kbdev, CSF_INTERRUPT, NULL, val);
 	kbase_reg_write(kbdev, JOB_CONTROL_REG(JOB_IRQ_CLEAR), val);
+	order_job_irq_clear_with_iface_mem_read();
 
 #if IS_ENABLED(CONFIG_MALI_MTK_IRQ_DEBUG)
 	if (csg_interrupts != 0) {

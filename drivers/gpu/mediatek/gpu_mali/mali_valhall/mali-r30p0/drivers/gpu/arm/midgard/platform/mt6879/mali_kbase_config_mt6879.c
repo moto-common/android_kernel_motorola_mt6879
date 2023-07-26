@@ -12,12 +12,13 @@
 #include <mali_kbase.h>
 #include <mali_kbase_defs.h>
 #include <mali_kbase_config.h>
-#include <mt-plat/mboot_params.h>
-#include "mali_kbase_cpu_mt6873.h"
 #include "mali_kbase_config_platform.h"
 #include "platform/mtk_platform_common.h"
-#include "ged_dvfs.h"
-#include "mtk_gpufreq.h"
+#include <ged_dvfs.h>
+#include <mtk_gpufreq.h>
+#if IS_ENABLED(CONFIG_MTK_AEE_IPANIC)
+#include <mboot_params.h>
+#endif
 #if IS_ENABLED(CONFIG_MTK_GPU_SWPM_SUPPORT)
 #include <mtk_gpu_power_sspm_ipi.h>
 #endif
@@ -28,9 +29,8 @@
 
 DEFINE_MUTEX(g_mfg_lock);
 
-static int g_curFreqID;
-
 //FIXME
+static int g_curFreqID;
 static int g_is_suspend;
 
 enum gpu_dvfs_status_step {
@@ -68,18 +68,35 @@ static inline void gpu_dvfs_status_reset_footprint(void)
 
 static int pm_callback_power_on_nolock(struct kbase_device *kbdev)
 {
-	if (mt_gpufreq_bringup()) {
-		mtk_set_vgpu_power_on_flag(MTK_VGPU_POWER_ON);
+#if defined(CONFIG_MTK_GPUFREQ_V2)
+	if (mtk_common_gpufreq_bringup()) {
+		mtk_common_pm_mfg_active();
+		return 1;
+	}
+
+	if (!gpufreq_power_ctrl_enable()) {
+		mtk_common_pm_mfg_active();
+#if IS_ENABLED(CONFIG_MALI_MIDGARD_DVFS) && IS_ENABLED(CONFIG_MTK_GPU_COMMON_DVFS)
+		ged_dvfs_gpu_clock_switch_notify(1);
+#endif
+		return 1;
+	}
+#else /* CONFIG_MTK_GPUFREQ_V2 */
+	if (mtk_common_gpufreq_bringup()) {
+		mtk_common_pm_mfg_active();
 		return 1;
 	}
 
 	if (!mt_gpufreq_power_ctl_en()) {
-		mtk_set_vgpu_power_on_flag(MTK_VGPU_POWER_ON);
+		mtk_common_pm_mfg_active();
+#if IS_ENABLED(CONFIG_MALI_MIDGARD_DVFS) && IS_ENABLED(CONFIG_MTK_GPU_COMMON_DVFS)
 		ged_dvfs_gpu_clock_switch_notify(1);
+#endif
 		return 1;
 	}
+#endif /* CONFIG_MTK_GPUFREQ_V2 */
 
-	if (mtk_get_vgpu_power_on_flag() == MTK_VGPU_POWER_ON)
+	if (mtk_common_pm_is_mfg_active())
 		return 0;
 
 	mali_pr_debug("@%s: power on ...\n", __func__);
@@ -92,23 +109,34 @@ static int pm_callback_power_on_nolock(struct kbase_device *kbdev)
 	}
 
 	/* on,off/ SWCG(BG3D)/ MTCMOS/ BUCK */
+#if defined(CONFIG_MTK_GPUFREQ_V2)
+	if (gpufreq_power_control(POWER_ON) < 0) {
+		mali_pr_info("@%s: fail to power on\n", __func__);
+		return 0;
+	}
+#else
 	mt_gpufreq_power_control(POWER_ON, CG_ON, MTCMOS_ON, BUCK_ON);
+#endif /* CONFIG_MTK_GPUFREQ_V2 */
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_2);
 
+#if defined(CONFIG_MTK_GPUFREQ_V2)
+	gpufreq_set_timestamp();
+#else
 	mt_gpufreq_set_timestamp();
+#endif /* CONFIG_MTK_GPUFREQ_V2 */
 
 	/* set a flag to enable GPU DVFS */
-	mtk_set_vgpu_power_on_flag(MTK_VGPU_POWER_ON);
+	mtk_common_pm_mfg_active();
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_3);
 
 	/* resume frequency */
-	mtk_set_mt_gpufreq_target(g_curFreqID);
+	mtk_common_gpufreq_commit(g_curFreqID);
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_4);
 
-#ifdef ENABLE_COMMON_DVFS
+#if IS_ENABLED(CONFIG_MALI_MIDGARD_DVFS) && IS_ENABLED(CONFIG_MTK_GPU_COMMON_DVFS)
 	ged_dvfs_gpu_clock_switch_notify(1);
 #endif
 
@@ -119,42 +147,61 @@ static int pm_callback_power_on_nolock(struct kbase_device *kbdev)
 
 static void pm_callback_power_off_nolock(struct kbase_device *kbdev)
 {
-	if (mt_gpufreq_bringup())
+#if defined(CONFIG_MTK_GPUFREQ_V2)
+	if (mtk_common_gpufreq_bringup())
+		return;
+
+	if (!gpufreq_power_ctrl_enable())
+		return;
+#else
+	if (mtk_common_gpufreq_bringup())
 		return;
 
 	if (!mt_gpufreq_power_ctl_en())
 		return;
+#endif /* CONFIG_MTK_GPUFREQ_V2 */
 
-	if (mtk_get_vgpu_power_on_flag() == MTK_VGPU_POWER_OFF)
+	if (!mtk_common_pm_is_mfg_active())
 		return;
 
 	mali_pr_debug("@%s: power off ...\n", __func__);
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_6);
 
-#ifdef ENABLE_COMMON_DVFS
+#if IS_ENABLED(CONFIG_MALI_MIDGARD_DVFS) && IS_ENABLED(CONFIG_MTK_GPU_COMMON_DVFS)
 	ged_dvfs_gpu_clock_switch_notify(0);
 #endif
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_7);
 
 	/* set a flag to disable GPU DVFS */
-	mtk_set_vgpu_power_on_flag(MTK_VGPU_POWER_OFF);
+	mtk_common_pm_mfg_idle();
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_8);
 
 	/* suspend frequency */
-	g_curFreqID = mtk_get_ged_dvfs_last_commit_idx();
+	g_curFreqID = mtk_common_ged_dvfs_get_last_commit_idx();
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_9);
 
 	/* check MFG bus if idle */
+#if defined(CONFIG_MTK_GPUFREQ_V2)
+	gpufreq_check_bus_idle();
+#else
 	mt_gpufreq_check_bus_idle();
+#endif /* CONFIG_MTK_GPUFREQ_V2 */
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_A);
 
 	/* on,off/ SWCG(BG3D)/ MTCMOS/ BUCK */
+#if defined(CONFIG_MTK_GPUFREQ_V2)
+	if (gpufreq_power_control(POWER_OFF) < 0) {
+		mali_pr_info("@%s: fail to power off\n", __func__);
+		return;
+	}
+#else
 	mt_gpufreq_power_control(POWER_OFF, CG_OFF, MTCMOS_OFF, BUCK_OFF);
+#endif /* CONFIG_MTK_GPUFREQ_V2 */
 
 	gpu_dvfs_status_footprint(GPU_DVFS_STATUS_STEP_B);
 }
@@ -165,10 +212,10 @@ static int pm_callback_power_on(struct kbase_device *kbdev)
 
 	mutex_lock(&g_mfg_lock);
 	ret = pm_callback_power_on_nolock(kbdev);
-	mutex_unlock(&g_mfg_lock);
 #if IS_ENABLED(CONFIG_MTK_GPU_SWPM_SUPPORT)
 	MTKGPUPower_model_resume();
 #endif
+	mutex_unlock(&g_mfg_lock);
 
 	return ret;
 }
@@ -187,7 +234,7 @@ static void pm_callback_power_suspend(struct kbase_device *kbdev)
 {
 	mutex_lock(&g_mfg_lock);
 
-	if (mtk_get_vgpu_power_on_flag() == MTK_VGPU_POWER_ON) {
+	if (mtk_common_pm_is_mfg_active()) {
 		pm_callback_power_off_nolock(kbdev);
 		mali_pr_info("@%s: force powering off GPU\n", __func__);
 	}
@@ -228,7 +275,7 @@ static struct kbase_io_resources io_resources = {
 	.end = 0xFC010000 + (4096 * 4) - 1
 	}
 };
-#endif
+#endif /* CONFIG_OF */
 
 static struct kbase_platform_config versatile_platform_config = {
 #ifndef CONFIG_OF
@@ -241,17 +288,11 @@ struct kbase_platform_config *kbase_get_platform_config(void)
 	return &versatile_platform_config;
 }
 
-int kbase_platform_early_init(void)
-{
-	/* Nothing needed at this stage */
-	return 0;
-}
-
-int mtk_platform_init(struct kbase_device *kbdev)
+int mtk_platform_device_init(struct kbase_device *kbdev)
 {
 
 	if (!kbdev) {
-		mali_pr_info("@%s: input parameter is NULL\n", __func__);
+		mali_pr_info("@%s: kbdev is NULL\n", __func__);
 		return -1;
 	}
 
@@ -264,3 +305,5 @@ int mtk_platform_init(struct kbase_device *kbdev)
 
 	return 0;
 }
+
+void mtk_platform_device_term(struct kbase_device *kbdev) { }
