@@ -1673,6 +1673,28 @@ static int kbasep_ioctl_set_limited_core_count(struct kbase_context *kctx,
 	return 0;
 }
 
+static int kbasep_ioctl_local_fence_wait(struct kbase_context *kctx,
+			struct kbase_ioctl_local_fence_wait *fence_wait)
+{
+	dev_info(kctx->kbdev->dev, "@%s: fence wait timeouts! pid=%u flags=0x%x time=%u(ms)",
+	         __func__, fence_wait->pid, fence_wait->flags,
+	         (unsigned int)fence_wait->time_in_microseconds);
+#if IS_ENABLED(CONFIG_MALI_MTK_DEBUG)
+	ged_log_buf_print2(kctx->kbdev->ged_log_buf_hnd_kbase, GED_LOG_ATTR_TIME,
+		 "%s: fence wait timeouts! pid=%u flags=0x%x time=%u(ms)\n",
+		 __func__, fence_wait->pid, fence_wait->flags,
+		 (unsigned int)fence_wait->time_in_microseconds);
+#endif
+#if MALI_USE_CSF
+	if (fence_wait->flags & BASE_LOCAL_FENCE_DUMP_FLAG)
+		kbase_csf_local_fence_wait_dump(kctx,
+		                                (unsigned int)fence_wait->pid,
+		                                (unsigned int)fence_wait->flags,
+		                                (unsigned long)fence_wait->time_in_microseconds);
+#endif
+	return 0;
+}
+
 static long kbase_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	struct kbase_file *const kfile = filp->private_data;
@@ -2049,6 +2071,12 @@ static long kbase_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		KBASE_HANDLE_IOCTL_IN(KBASE_IOCTL_SET_LIMITED_CORE_COUNT,
 				kbasep_ioctl_set_limited_core_count,
 				struct kbase_ioctl_set_limited_core_count,
+				kctx);
+		break;
+	case KBASE_IOCTL_LOCAL_FENCE_WAIT:
+		KBASE_HANDLE_IOCTL_IN(KBASE_IOCTL_LOCAL_FENCE_WAIT,
+				kbasep_ioctl_local_fence_wait,
+				struct kbase_ioctl_local_fence_wait,
 				kctx);
 		break;
 	}
@@ -4982,7 +5010,6 @@ int kbase_device_coherency_init(struct kbase_device *kbdev)
 	coherency_override_dts = of_get_property(kbdev->dev->of_node,
 						"system-coherency",
 						NULL);
-	config_system_coherency = 31; // force disable coherency.
 	if (coherency_override_dts && config_system_coherency == 0) {
 
 		override_coherency = be32_to_cpup(coherency_override_dts);
