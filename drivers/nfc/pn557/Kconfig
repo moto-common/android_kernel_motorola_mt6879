@@ -1,0 +1,2 @@
+config NFC_PN557
+	tristate "pn557 nfc :("

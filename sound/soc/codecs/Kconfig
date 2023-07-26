@@ -1883,4 +1883,6 @@ config TYPEC_FSA4480
 	tristate "fsa4480 for typec analog headset"
 	depends on I2C
 
+source "sound/soc/codecs/aw882xx_dlkm/Kconfig"
+
 endmenu

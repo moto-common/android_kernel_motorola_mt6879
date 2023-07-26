@@ -87,7 +87,6 @@ ccflags-y += -I$(srctree)/drivers/gpu/drm/mediatek/mediatek_v2
 ###############################################################################
 
 
-ccflags-y += -Werror
 ccflags-y += $(call cc-disable-warning,unused-but-set-variable)
 
 ifeq ($(CONFIG_MTK_COMBO_CHIP_MT6628),y)
@@ -122,7 +121,7 @@ $(warning $(MODULE_NAME) build-in boot.img)
 obj-y += $(MODULE_NAME).o
 else
 $(warning $(MODULE_NAME) is kernel module)
-obj-m += $(MODULE_NAME).o
+#obj-m += $(MODULE_NAME).o
 endif
 
 ###############################################################################

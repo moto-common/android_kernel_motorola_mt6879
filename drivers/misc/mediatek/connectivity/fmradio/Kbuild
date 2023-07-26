@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0
 # Copyright (c) 2021 Mediatek Inc.
-
+CFG_BUILD_CONNAC2 := true
 CFG_FM_PLAT := mt6631_6635
-CFG_FM_CHIP_ID := 6789
+CFG_FM_CHIP_ID := 6879
+CFG_FM_CHIP := mt6635
 
 ###############################################################################
 # Necessary Check
@@ -33,6 +34,8 @@ else
 endif
 ccflags-y += -D MTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT
 
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/linux/include
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/include
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/include
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
 
