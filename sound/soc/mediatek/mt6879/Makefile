@@ -13,6 +13,10 @@ ccflags-y += -I$(srctree)/sound/soc/mediatek/audio_dsp
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/include
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include
 
+ifneq ($(filter y m,$(CONFIG_SND_SMARTPA_AW882XX)),)
+ccflags-y += -DCONFIG_SND_SMARTPA_AW882XX
+endif
+
 # platform driver
 obj-$(CONFIG_SND_SOC_MT6879) += snd-soc-mt6879-afe.o
 snd-soc-mt6879-afe-objs += \
