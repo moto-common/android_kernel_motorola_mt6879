@@ -3112,11 +3112,11 @@ static DEVICE_ATTR(cali, S_IWUSR | S_IRUGO, cali_show, cali_store);
 static DEVICE_ATTR(ram_cali, S_IWUSR | S_IRUGO, ram_cali_show, ram_cali_store);
 static DEVICE_ATTR(cont, S_IWUSR | S_IRUGO, NULL, cont_store);
 static DEVICE_ATTR(awrw, S_IWUSR | S_IRUGO, awrw_show, awrw_store);
-static DEVICE_ATTR(state, S_IWUSR | S_IRUGO, state_show, state_store);
+static DEVICE_ATTR(aw_state, S_IWUSR | S_IRUGO, state_show, state_store);
 static DEVICE_ATTR(index, S_IWUSR | S_IRUGO, index_show, index_store);
 static DEVICE_ATTR(ram_num, S_IWUSR | S_IRUGO, ram_num_show, NULL);
-static DEVICE_ATTR(duration, S_IWUSR | S_IRUGO, duration_show, duration_store);
-static DEVICE_ATTR(activate, S_IWUSR | S_IRUGO, activate_show, activate_store);
+static DEVICE_ATTR(aw_duration, S_IWUSR | S_IRUGO, duration_show, duration_store);
+static DEVICE_ATTR(aw_activate, S_IWUSR | S_IRUGO, activate_show, activate_store);
 static DEVICE_ATTR(osc_cali, S_IWUSR | S_IRUGO, osc_cali_show, osc_cali_store);
 static DEVICE_ATTR(gun_type, S_IWUSR | S_IRUGO, gun_type_show, gun_type_store);
 static DEVICE_ATTR(prctmode, S_IWUSR | S_IRUGO, prct_mode_show,
@@ -3151,9 +3151,9 @@ static DEVICE_ATTR(dual_rtp, S_IWUSR | S_IRUGO, dual_rtp_show, dual_rtp_store);
 #endif
 
 static struct attribute *vibrator_attributes[] = {
-	&dev_attr_state.attr,
-	&dev_attr_duration.attr,
-	&dev_attr_activate.attr,
+	&dev_attr_aw_state.attr,
+	&dev_attr_aw_duration.attr,
+	&dev_attr_aw_activate.attr,
 	&dev_attr_activate_mode.attr,
 	&dev_attr_index.attr,
 	&dev_attr_vmax.attr,
