@@ -1584,8 +1584,6 @@ int32_t MT_ATELogOnOff(struct net_device *prNetDev,
 			       "QA_ATE_HOOK Get RX Vector Total Size Error!!!!\n\n");
 		}
 
-		TOOL_PRINTLOG(RFTEST, ERROR, "[LOG DUMP START]\n");
-
 		for (i = 0; i < i4TargetLength; i += 4) {
 			rRfATInfo.u4FuncIndex = RF_AT_FUNCID_RXV_DUMP;
 			rRfATInfo.u4FuncData = i;
@@ -1597,22 +1595,9 @@ int32_t MT_ATELogOnOff(struct net_device *prNetDev,
 
 			if (i4Status == 0) {
 				rxv = rRfATInfo.u4FuncData;
-
-				if (i % 36 == 0)
-					TOOL_PRINTLOG(RFTEST, ERROR,
-						      "%%[RXV DUMP START][%d]\n",
-						      (i / 36) + 1);
-
-				TOOL_PRINTLOG(RFTEST, ERROR, "[RXVD%d]%08x\n",
-					      ((i % 36) / 4) + 1, rxv);
-
-				if (((i % 36) / 4) + 1 == 9)
-					TOOL_PRINTLOG(RFTEST, ERROR,
-						      "[RXV DUMP END]\n");
 			}
 		}
 
-		TOOL_PRINTLOG(RFTEST, ERROR, "[LOG DUMP END]\n");
 	}
 
 	return i4Status;
