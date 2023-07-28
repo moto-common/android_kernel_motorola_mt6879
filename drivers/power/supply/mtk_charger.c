@@ -2411,10 +2411,10 @@ stop_charging:
 
 	if (info->mmi.adaptive_charging_disable_ichg || info->mmi.demo_discharging) {
 		mtk_charger_force_disable_power_path(info, CHG1_SETTING, true);
-		pr_info("[%s] force disable power path true\n", __func__);
+		pr_debug("[%s] force disable power path true\n", __func__);
 	} else if (mtk_is_charger_on(info)) {
 		mtk_charger_force_disable_power_path(info, CHG1_SETTING, false);
-		pr_info("[%s] force disable power path false\n", __func__);
+		pr_debug("[%s] force disable power path false\n", __func__);
 	}
 }
 
@@ -2857,7 +2857,7 @@ static int mmi_get_ffc_fv(struct mtk_charger *info, int temp_c)
 
 	info->mmi.chrg_iterm = zone->ffc_chg_iterm;
 	ffc_max_fv = zone->ffc_max_mv;
-	pr_info("FFC temp zone %d, fv %d mV, chg iterm %d mA\n",
+	pr_debug("FFC temp zone %d, fv %d mV, chg iterm %d mA\n",
 		  ((i > 0)? (i - 1) : 0), ffc_max_fv, info->mmi.chrg_iterm);
 
 	return ffc_max_fv;
@@ -3091,7 +3091,7 @@ static void mmi_find_temp_zone(struct mtk_charger *info, int temp_c, int vbat_mv
 	}
 
 	if (prev_zone != info->mmi.pres_temp_zone) {
-		pr_info("[C:%s]: temp zone switch %x -> %x\n",
+		pr_debug("[C:%s]: temp zone switch %x -> %x\n",
 			__func__,
 			prev_zone,
 			info->mmi.pres_temp_zone);
@@ -3212,7 +3212,7 @@ void mmi_charge_rate_check(struct mtk_charger *info)
 		info->mmi.charge_rate= POWER_SUPPLY_CHARGE_RATE_NONE;
 		goto end_rate_check;
 	} else if (!val.intval) {
-		pr_info("[%s]usb off line\n", __func__);
+		pr_debug("[%s]usb off line\n", __func__);
 		info->mmi.charge_rate = POWER_SUPPLY_CHARGE_RATE_NONE;
 		goto end_rate_check;
 	}
@@ -3307,10 +3307,10 @@ void mmi_charge_rate_check(struct mtk_charger *info)
 
 end_rate_check:
 #ifdef CONFIG_MOTO_DISCRETE_CHARGE_PUMP_SUPPORT
-	pr_info("%s ICL:%d, aicl_lmt:%d, vbus: %d, ibus: %d, Rp:%d, PD:%d, chg_type: %d, Charger Detected: %s\n",
+	pr_debug("%s ICL:%d, aicl_lmt:%d, vbus: %d, ibus: %d, Rp:%d, PD:%d, chg_type: %d, Charger Detected: %s\n",
 		__func__, icl, aicl_lmt, vbus, ibus, rp_level, info->pd_type, m_chg_type, charge_rate[info->mmi.charge_rate]);
 #else
-	pr_info("%s ICL:%d, Rp:%d, PD:%d, Charger Detected: %s\n",
+	pr_debug("%s ICL:%d, Rp:%d, PD:%d, Charger Detected: %s\n",
 		__func__, icl, rp_level, info->pd_type, charge_rate[info->mmi.charge_rate]);
 #endif
 }
@@ -3362,7 +3362,7 @@ static mmi_get_battery_age(void)
 
 	gauge->gm->aging_factor =
 		gauge->gm->aging_factor > 10000? 10000: gauge->gm->aging_factor;
-	pr_info("[%s]battery age is %d\n", __func__, gauge->gm->aging_factor);
+	pr_debug("[%s]battery age is %d\n", __func__, gauge->gm->aging_factor);
 
 	return gauge->gm->aging_factor /100;
 #endif
@@ -4119,12 +4119,12 @@ static void mmi_charger_check_status(struct mtk_charger *info)
 	usb_mv = get_vbus(info);
 
 
-	pr_info("[%s]batt=%d mV, %d mA, %d C, USB= %d mV\n", __func__,
+	pr_debug("[%s]batt=%d mV, %d mA, %d C, USB= %d mV\n", __func__,
 		batt_mv, batt_ma, batt_temp, usb_mv);
 
 	if (!mmi->temp_zones) {
 		pr_err("[%s]temp_zones is NULL\n", __func__);
-		pr_info("[%s]EFFECTIVE: FV = %d, CDIS = %d, FCC = %d, "
+		pr_debug("[%s]EFFECTIVE: FV = %d, CDIS = %d, FCC = %d, "
 		"USBICL = %d, DEMO_DISCHARG = %d\n", __func__,
 		mmi->target_fv,
 		mmi->chg_disable,
@@ -4215,7 +4215,7 @@ static void mmi_charger_check_status(struct mtk_charger *info)
 		static int usb_suspend = 0;
 
 		mmi->pres_chrg_step = STEP_DEMO;
-		pr_info("[%s]Battery in Demo Mode charging Limited %dper\n",
+		pr_debug("[%s]Battery in Demo Mode charging Limited %dper\n",
 				__func__, mmi->demo_mode);
 
 		voltage_full = ((usb_suspend == 0) &&
@@ -4239,7 +4239,7 @@ static void mmi_charger_check_status(struct mtk_charger *info)
 		if (usb_suspend)
 			charger_dev_set_input_current(info->chg1_dev, 0);
 
-		pr_info("Charge Demo Mode:us = %d, vf = %d, dfs = %d,bs = %d\n",
+		pr_debug("Charge Demo Mode:us = %d, vf = %d, dfs = %d,bs = %d\n",
 				usb_suspend, voltage_full, demo_full_soc, batt_soc);
 	} else if (mmi->pres_chrg_step == STEP_NONE) {
 		if (zone->norm_mv && ((batt_mv + 2 * HYST_STEP_MV) >= zone->norm_mv)) {
@@ -4374,11 +4374,11 @@ static void mmi_charger_check_status(struct mtk_charger *info)
 	} else
 		info->mmi.batt_health = POWER_SUPPLY_HEALTH_GOOD;
 
-	pr_info("[%s]FV %d mV, FCC %d mA\n",
+	pr_debug("[%s]FV %d mV, FCC %d mA\n",
 		 __func__, target_fv, target_fcc);
-	pr_info("[%s]Step State = %s\n", __func__,
+	pr_debug("[%s]Step State = %s\n", __func__,
 		stepchg_str[(int)mmi->pres_chrg_step]);
-	pr_info("[%s]EFFECTIVE: FV = %d, CDIS = %d, FCC = %d, "
+	pr_debug("[%s]EFFECTIVE: FV = %d, CDIS = %d, FCC = %d, "
 		"USBICL = %d, DEMO_DISCHARG = %d\n",
 		__func__,
 		mmi->target_fv,
@@ -4386,7 +4386,7 @@ static void mmi_charger_check_status(struct mtk_charger *info)
 		mmi->target_fcc,
 		mmi->target_usb,
 		mmi->demo_discharging);
-	pr_info("[%s]adaptive charging:disable_ibat = %d, "
+	pr_debug("[%s]adaptive charging:disable_ibat = %d, "
 		"disable_ichg = %d, enable HZ = %d, "
 		"charging disable = %d\n",
 		__func__,
@@ -4407,7 +4407,7 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 	int i;
 
 	if (!node) {
-		pr_info("[%s]mmi dtree info. missing\n",__func__);
+		pr_debug("[%s]mmi dtree info. missing\n",__func__);
 		return -ENODEV;
 	}
 
@@ -4473,10 +4473,10 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 			pr_err("[%s]Couldn't read mmi temp zones rc = %d\n", __func__, rc);
 			return rc;
 		}
-		pr_info("[%s]"
+		pr_debug("[%s]"
 			"mmi temp zones: Num: %d\n", __func__, info->mmi.num_temp_zones);
 		for (i = 0; i < info->mmi.num_temp_zones; i++) {
-			pr_info("[%s]"
+			pr_debug("[%s]"
 				"mmi temp zones: Zone %d, Temp %d C, "
 				"Step Volt %d mV, Full Rate %d mA, "
 				"Taper Rate %d mA\n", __func__, i,
@@ -4598,9 +4598,9 @@ static int chg_reboot(struct notifier_block *nb,
 	union power_supply_propval val;
 	int rc;
 
-	pr_info("chg Reboot\n");
+	pr_debug("chg Reboot\n");
 	if (!info) {
-		pr_info("called before chip valid!\n");
+		pr_debug("called before chip valid!\n");
 		return NOTIFY_DONE;
 	}
 
@@ -4622,10 +4622,10 @@ static int chg_reboot(struct notifier_block *nb,
 				msleep(100);
 				rc = mmi_get_prop_from_charger(info,
 					POWER_SUPPLY_PROP_ONLINE, &val);
-				pr_info("Wait for VBUS to decay\n");
+				pr_debug("Wait for VBUS to decay\n");
 			}
 
-			pr_info("VBUS UV wait 1 sec!\n");
+			pr_debug("VBUS UV wait 1 sec!\n");
 			/* Delay 1 sec to allow more VBUS decay */
 			msleep(1000);
 			break;
@@ -4816,7 +4816,7 @@ void mmi_init(struct mtk_charger *info)
 
 	rc = parse_mmi_dt(info, &info->pdev->dev);
 	if (rc < 0)
-		pr_info("[%s]Error getting mmi dt items rc = %d\n",__func__, rc);
+		pr_debug("[%s]Error getting mmi dt items rc = %d\n",__func__, rc);
 
 	if(gpio_is_valid(info->mmi.wls_switch_en)) {
 		rc  = devm_gpio_request_one(&info->pdev->dev, info->mmi.wls_switch_en,
@@ -5653,7 +5653,7 @@ static int mtk_charger_enable_power_path(struct mtk_charger *info,
 		goto out;
 	}
 
-	pr_info("%s: enable power path = %d\n", __func__, en);
+	pr_debug("%s: enable power path = %d\n", __func__, en);
 	ret = charger_dev_enable_powerpath(chg_dev, en);
 out:
 	mutex_unlock(&info->pp_lock[idx]);
@@ -5758,12 +5758,12 @@ int psy_charger_set_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_INPUT_POWER_LIMIT:
 		info->mmi.adaptive_charging_disable_ichg = !!val->intval;
-		pr_info("%s: adaptive charging disable ichg %d\n", __func__,
+		pr_debug("%s: adaptive charging disable ichg %d\n", __func__,
 			info->mmi.adaptive_charging_disable_ichg);
 		break;
 	case POWER_SUPPLY_PROP_CURRENT_MAX:
 		info->mmi.adaptive_charging_disable_ibat =  !!val->intval;
-		pr_info("%s: adaptive charging disable ibat %d\n", __func__,
+		pr_debug("%s: adaptive charging disable ibat %d\n", __func__,
 			info->mmi.adaptive_charging_disable_ibat);
 		break;
 #if defined(CONFIG_MOTO_DISCRETE_CHARGE_PUMP_SUPPORT) || defined(CONFIG_MOTO_CHARGER_SGM415XX)
