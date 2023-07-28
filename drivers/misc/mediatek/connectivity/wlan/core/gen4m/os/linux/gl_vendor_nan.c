@@ -368,13 +368,6 @@ nanMapNan20RangingReqParams(u32 *pIndata,
 	       "[%s]requestor_instance_id: %u, ranging_response_code:%u\n",
 	       __func__, prNanRangeRspCfgParms->requestor_instance_id,
 	       prNanRangeRspCfgParms->ranging_response_code);
-	DBGFWLOG(NAN, INFO, "[%s] addr=>%02x:%02x:%02x:%02x:%02x:%02x\n",
-		 __func__, prNanRangeRspCfgParms->peer_addr[0],
-		 prNanRangeRspCfgParms->peer_addr[1],
-		 prNanRangeRspCfgParms->peer_addr[2],
-		 prNanRangeRspCfgParms->peer_addr[3],
-		 prNanRangeRspCfgParms->peer_addr[4],
-		 prNanRangeRspCfgParms->peer_addr[5]);
 }
 
 u32
