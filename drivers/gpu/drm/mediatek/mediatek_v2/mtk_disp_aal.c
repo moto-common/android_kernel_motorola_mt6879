@@ -276,7 +276,7 @@ static int disp_aal_get_cust_led(void)
 	"mediatek,lcd-backlight");
 	if (!led_node) {
 		ret = -1;
-		pr_notice("Cannot find LED node from dts\n");
+//		pr_notice("Cannot find LED node from dts\n");
 	} else {
 		ret = of_property_read_u32(led_node, "led_mode", &led_mode);
 		if (!ret)
@@ -288,10 +288,11 @@ static int disp_aal_get_cust_led(void)
 	    "pwm_config", pwm_config, ARRAY_SIZE(pwm_config));
 	}
 
-	if (ret)
+/*	if (ret)
 		pr_notice("get pwm cust info fail\n");
-	pr_notice("%s mode=%u\n", __func__, atomic_read(&g_led_mode));
 
+	pr_notice("%s mode=%u\n", __func__, atomic_read(&g_led_mode));
+*/
 	return ret;
 }
 
