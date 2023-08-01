@@ -30,7 +30,7 @@
 #include <csf/mali_kbase_csf_cpu_queue_debugfs.h>
 #include <csf/mali_kbase_csf.h>
 
-#if IS_ENABLED(CONFIG_DEBUG_FS)
+#if IS_ENABLED(CONFIG_MALI_MTK_DEBUG)
 #include "mali_kbase_csf_tl_reader.h"
 
 /**
