@@ -328,6 +328,7 @@ static void jatm_stop_work_fn(struct work_struct *work)
 	disable_jatm(BUDGET_RUNNING_OUT);
 }
 
+#if defined(CONFIG_MTK_FPSGO_V3)
 void jatm_notify_fp_cb(int enable)
 {
 
@@ -339,6 +340,7 @@ void jatm_notify_fp_cb(int enable)
 	else
 		disable_jatm(FRAME_COMPLETE);
 }
+#endif
 
 static ssize_t jatm_info_show(struct kobject *kobj,
 	struct kobj_attribute *attr, char *buf)
@@ -604,7 +606,9 @@ static int therm_jatm_probe(struct platform_device *pdev)
 
 	j_info.mode = STOP_DEADLINE;
 
+#if defined(CONFIG_MTK_FPSGO_V3)
 	jatm_notify_fp = jatm_notify_fp_cb;
+#endif
 
 	return 0;
 }
