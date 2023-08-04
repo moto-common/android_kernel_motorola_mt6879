@@ -21,7 +21,7 @@
 
 #include <mali_kbase.h>
 
-#if IS_ENABLED(CONFIG_MALI_MTK_DEBUG)
+#if IS_ENABLED(CONFIG_DEBUG_FS)
 
 /**
  * Show callback for the @c mem_profile debugfs file.

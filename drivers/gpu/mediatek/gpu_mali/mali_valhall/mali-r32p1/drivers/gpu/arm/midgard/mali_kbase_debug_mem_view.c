@@ -29,7 +29,7 @@
 #include <linux/list.h>
 #include <linux/file.h>
 
-#if IS_ENABLED(CONFIG_MALI_MTK_DEBUG)
+#if IS_ENABLED(CONFIG_DEBUG_FS)
 
 struct debug_mem_mapping {
 	struct list_head node;
