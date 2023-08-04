@@ -38,7 +38,7 @@ void kbase_as_fault_debugfs_init(struct kbase_device *kbdev);
 static inline void
 kbase_as_fault_debugfs_new(struct kbase_device *kbdev, int as_no)
 {
-#if IS_ENABLED(CONFIG_MALI_MTK_DEBUG)
+#if IS_ENABLED(CONFIG_DEBUG_FS)
 #ifdef CONFIG_MALI_DEBUG
 	kbdev->debugfs_as_read_bitmap |= (1ULL << as_no);
 #endif /* CONFIG_DEBUG_FS */
