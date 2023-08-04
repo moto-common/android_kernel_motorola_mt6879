@@ -138,3 +138,4 @@ obj-$(CONFIG_MTK_VIDEOCODEC_DRIVER) += videocodec/
 obj-$(CONFIG_MTK_LEGACY_THERMAL) += thermal/
 obj-$(CONFIG_MTK_MT6382_BDG) += spi_slave_drv/
 obj-$(CONFIG_HQ_CAMERA_LDO) += camera_ldo/
+obj-y += met_drv/
