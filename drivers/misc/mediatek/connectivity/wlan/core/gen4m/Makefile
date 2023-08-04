@@ -40,8 +40,9 @@ ifeq ($(KBUILD_MODPOST_FAIL_ON_WARNINGS),)
     KBUILD_MODPOST_FAIL_ON_WARNINGS=y
 endif
 
-DRIVER_BUILD_DATE=$(shell date +%Y%m%d%H%M%S)
-ccflags-y += -DDRIVER_BUILD_DATE='"$(DRIVER_BUILD_DATE)"'
+# Remove to avoid rebuild
+#DRIVER_BUILD_DATE=$(shell date +%Y%m%d%H%M%S)
+#ccflags-y += -DDRIVER_BUILD_DATE='"$(DRIVER_BUILD_DATE)"'
 # ---------------------------------------------------
 # Compile Options
 # ---------------------------------------------------
