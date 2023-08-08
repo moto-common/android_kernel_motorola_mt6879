@@ -599,6 +599,8 @@ struct ts_mmi_dev {
 	bool lpd_state;
 	int liquid_status;
 
+	unsigned long cmd_pending;
+
 	/*
 	 * sys entey variable
 	 */
