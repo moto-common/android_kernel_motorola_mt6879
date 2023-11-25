@@ -31,6 +31,12 @@
 #define AV_FILTER
 /* #define ENABLE_CURRENT_NE_CORE_DUMP */
 
+#ifdef ENABLE_CURRENT_NE_CORE_DUMP
+#include <mt-plat/mtk_sysenv.h>
+static atomic_t ne_warning_count;
+#define POLLING_NE_PROCESS_COUNT     5
+#endif
+
 
 static const char *aee_filter_list[AEE_FILTER_NUM] = {
 	"u:r:bootanim:s0",
@@ -260,6 +266,34 @@ void mtk_audit_hook(char *data)
 		if (pname != 0) {
 			char printbuf[PRINT_BUF_LEN] = { '\0' };
 
+			#ifdef ENABLE_CURRENT_NE_CORE_DUMP
+			int count = 0;
+			struct task_struct *task;
+			pid_t pid = current->pid;  /* pid need dump */
+			pid_t tgid = current->tgid;
+			char *selinux_ne = get_env("selinux_ne");
+
+			if (selinux_ne != NULL) {
+				long ne_option;
+				int err = kstrtol(selinux_ne, 10, &ne_option);
+
+				if (err || (ne_option != 1)) {
+					pr_debug("[%s] ne_opt:%ld, err:%d\n",
+						MOD, ne_option, err);
+					return;
+				}
+			} else {
+				pr_debug("[%s] ne option is null\n", MOD);
+				return;
+			}
+
+
+			if (atomic_read(&ne_warning_count) >= 1)
+				return;
+
+			send_sig(SIGSEGV, current, 0);
+			atomic_inc(&ne_warning_count);
+			#endif
 
 			snprintf(printbuf, PRINT_BUF_LEN-1,
 				"[%s][WARNING]\nCR_DISPATCH_PROCESSNAME:%s\n",
@@ -270,6 +304,27 @@ void mtk_audit_hook(char *data)
 					DB_OPT_DEFAULT  | DB_OPT_NATIVE_BACKTRACE,
 					printbuf, data);
 #endif
+
+			#ifdef ENABLE_CURRENT_NE_CORE_DUMP
+
+			/* poll NE process and wait for its exitence */
+			while (count < POLLING_NE_PROCESS_COUNT) {
+				rcu_read_lock();
+				task = find_task_by_vpid(pid);
+				rcu_read_unlock();
+
+				if (task == NULL) {
+					pr_debug("[%s] pid: %d exist.\n",
+						 MOD, pid);
+					break;  /* pid exit, safe to return */
+				}
+				/* wait two more seconds */
+				pr_debug("[%s] pid: %d, tgid: %d, wait(%ds)\n",
+					MOD, pid, tgid, count);
+				msleep(2000);
+				count++;
+			}
+			#endif
 		}
 	}
 #endif
@@ -277,21 +332,4 @@ void mtk_audit_hook(char *data)
 	mtk_check_av(data);
 #endif
 }
-static int __init selinux_init(void)
-{
-	mtk_audit_hook_set(mtk_audit_hook);
-	pr_info("[SELinux] MTK SELinux init done\n");
-
-	return 0;
-}
-
-static void __exit selinux_exit(void)
-{
-	pr_info("[SELinux] MTK SELinux func exit\n");
-}
-
-module_init(selinux_init);
-module_exit(selinux_exit);
-MODULE_LICENSE("GPL v2");
-MODULE_DESCRIPTION("MediaTek SELINUX Driver");
-MODULE_AUTHOR("Kuan-Hsin Lee <kuan-hsin.lee@mediatek.com>");
+EXPORT_SYMBOL(mtk_audit_hook);
