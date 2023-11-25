@@ -25,6 +25,7 @@
 #include <linux/kmsg_dump.h>
 #include <linux/suspend.h>
 #include <linux/platform_device.h>
+#include <linux/pm_qos.h>
 #include "log_store_kernel.h"
 
 static struct sram_log_header *sram_header;
@@ -164,6 +165,7 @@ void log_store_bootup(void)
 	/* Boot up finish, don't save log to emmc in next boot.*/
 	store_log_to_emmc_enable(false);
 	set_boot_phase(BOOT_PHASE_ANDROID);
+	cancel_boot_cpu_latency();
 }
 
 static void *remap_lowmem(phys_addr_t start, phys_addr_t size)
