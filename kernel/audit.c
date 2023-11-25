@@ -907,7 +907,7 @@ main_queue:
 	return 0;
 }
 
-#if IS_ENABLED(CONFIG_MTK_SELINUX_AEE_WARNING)
+#ifdef CONFIG_MTK_SELINUX_AEE_WARNING
 /*
  * return skb field of audit buffer
  */
