@@ -1400,6 +1400,7 @@ void Maps2Buffer(unsigned char *Userthread_maps, int *Userthread_mapsLength,
 	va_end(ap);
 }
 
+#if 0
 static void print_vma_name(unsigned char *Userthread_maps,
 	int *Userthread_mapsLength, struct vm_area_struct *vma, char *str)
 {
@@ -1465,6 +1466,7 @@ static void print_vma_name(unsigned char *Userthread_maps,
 		page_start_vaddr += PAGE_SIZE;
 	}
 }
+#endif
 
 static int is_stack(struct vm_area_struct *vma)
 {
@@ -1486,8 +1488,6 @@ static void show_map_vma(unsigned char *Userthread_maps,
 	struct path base_path;
 	char tpath[512];
 	char *path_p = NULL;
-	char str[512];
-	int len;
 
 	if (file) {
 		struct inode *inode = file_inode(vma->vm_file);
@@ -1532,23 +1532,6 @@ static void show_map_vma(unsigned char *Userthread_maps,
 		if (is_stack(vma)) {
 			name = "[stack]";
 			goto done;
-		}
-
-		if (vma_get_anon_name(vma)) {
-			len = snprintf(str, sizeof(str),
-				"%08lx-%08lx %c%c%c%c %08llx %02x:%02x %lu ",
-				start, end, flags & VM_READ ? 'r' : '-',
-				flags & VM_WRITE ? 'w' : '-',
-				flags & VM_EXEC ? 'x' : '-',
-				flags & VM_MAYSHARE ? 's' : 'p',
-				pgoff, MAJOR(dev), MINOR(dev), ino);
-			if (len < 0) {
-				pr_info("%s: snprintf failed\n", __func__);
-				return;
-			}
-			print_vma_name(Userthread_maps, Userthread_mapsLength,
-				vma, str);
-			return;
 		}
 	}
 
