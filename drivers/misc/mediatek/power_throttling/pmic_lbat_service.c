@@ -243,7 +243,7 @@ static void lbat_irq_disable(void)
 	lbat_min_en_setting(false);
 }
 
-static int hv_list_cmp(void *priv, struct list_head *a, struct list_head *b)
+static int hv_list_cmp(void *priv, const struct list_head *a, const struct list_head *b)
 {
 	struct lbat_thd_t *thd_a, *thd_b;
 
@@ -253,7 +253,7 @@ static int hv_list_cmp(void *priv, struct list_head *a, struct list_head *b)
 	return thd_a->thd_volt - thd_b->thd_volt;
 }
 
-static int lv_list_cmp(void *priv, struct list_head *a, struct list_head *b)
+static int lv_list_cmp(void *priv, const struct list_head *a, const struct list_head *b)
 {
 	struct lbat_thd_t *thd_a, *thd_b;
 
