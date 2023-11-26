@@ -8,6 +8,7 @@ comment "MMC/SD/SDIO Host Controller Drivers"
 config MMC_DEBUG
 	tristate "MMC host drivers debugging"
 	depends on MMC != n
+	depends on MTK_BLOCK_IO_TRACER
 	help
 	  This is an option for use by developers; most people should
 	  say N here. This enables MMC host driver debugging. And further

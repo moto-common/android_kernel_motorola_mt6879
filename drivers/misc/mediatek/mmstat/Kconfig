@@ -1,6 +1,7 @@
 config MMSTAT_TRACER
 	tristate "Trace memory status periodically"
 	depends on TRACING
+	depends on VM_EVENT_COUNTERS
 	help
 	  Periodic tracing of memory status.
 

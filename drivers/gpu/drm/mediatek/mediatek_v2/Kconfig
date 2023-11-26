@@ -1,5 +1,8 @@
 config DRM_MEDIATEK_V2
 	bool "Version 2 of DRM Support for Mediatek SoCs"
+	select FONT_SUPPORT
+	select FONTS
+	select FONT_8x16
 	help
 	  Choose this option if you have a phone Mediatek
 	  SoCs. The module will be called mediatek-drm v2

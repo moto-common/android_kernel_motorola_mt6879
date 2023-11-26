@@ -559,7 +559,7 @@ void mtk_btag_pidlog_set_pid_pages(struct page **page, int page_cnt,
 		_mtk_btag_pidlog_set_pid(page[i], mode, write);
 }
 EXPORT_SYMBOL_GPL(mtk_btag_pidlog_set_pid_pages);
-
+#ifdef CONFIG_VM_EVENT_COUNTERS
 /* evaluate vmstat trace from global_node_page_state() */
 void mtk_btag_vmstat_eval(struct mtk_btag_vmstat *vm)
 {
@@ -586,7 +586,7 @@ void mtk_btag_vmstat_eval(struct mtk_btag_vmstat *vm)
 	}
 }
 EXPORT_SYMBOL_GPL(mtk_btag_vmstat_eval);
-
+#endif
 void mtk_btag_mictx_dump(void)
 {
 	struct mtk_btag_mictx_iostat_struct iostat;
