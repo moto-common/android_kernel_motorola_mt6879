@@ -436,6 +436,7 @@ void cancel_boot_cpu_latency(void)
 	if (atomic_cmpxchg(&boot_cpu_latency_set, 1, 0))
 		cpu_latency_qos_remove_request(&boot_cpu_latency_pm_qos);
 }
+EXPORT_SYMBOL_GPL(cancel_boot_cpu_latency);
 
 static int __init boot_cpu_latency_init(void)
 {
