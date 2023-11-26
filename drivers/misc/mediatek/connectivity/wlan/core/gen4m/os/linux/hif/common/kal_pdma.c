@@ -774,8 +774,8 @@ static bool kalDevKickMsduData(struct GLUE_INFO *prGlueInfo, uint32_t u4Port)
 	return fgRet;
 }
 
-static int kalAmsduTxDCmp(void *prPriv, struct list_head *prList1,
-			  struct list_head *prList2)
+static int kalAmsduTxDCmp(void *prPriv, const struct list_head *prList1,
+			  const struct list_head *prList2)
 {
 	struct TX_DATA_REQ *prTxReq1, *prTxReq2;
 	struct sk_buff *prSkb1, *prSkb2;
