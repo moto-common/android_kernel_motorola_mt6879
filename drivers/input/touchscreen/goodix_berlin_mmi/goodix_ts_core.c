@@ -2775,6 +2775,8 @@ static int goodix_ts_probe(struct platform_device *pdev)
 #endif
 
 #ifdef CONFIG_GTP_ENABLE_PM_QOS
+	core_data->goodix_pm_qos.type = PM_QOS_REQ_AFFINE_IRQ;
+	core_data->goodix_pm_qos.irq = core_data->irq;
 	cpu_latency_qos_add_request(&core_data->goodix_pm_qos, PM_QOS_DEFAULT_VALUE);
 #endif
 
