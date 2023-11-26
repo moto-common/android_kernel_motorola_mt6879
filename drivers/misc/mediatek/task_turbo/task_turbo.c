@@ -35,15 +35,6 @@
 
 LIST_HEAD(hmp_domains);
 
-#define SCHED_FEAT(name, enabled)	\
-	[__SCHED_FEAT_##name] = {0},
-
-struct static_key sched_feat_keys[__SCHED_FEAT_NR] = {
-#include "features.h"
-};
-
-#undef SCHED_FEAT
-
 /*TODO: find the magic bias number */
 #define TOP_APP_GROUP_ID	(4-1)*9
 #define TURBO_PID_COUNT		8

@@ -3956,7 +3956,7 @@ static int m4u_debug_init(struct mtk_m4u_data *data)
 	return 0;
 }
 
-static int iova_size_cmp(void *priv, struct list_head *a, struct list_head *b)
+static int iova_size_cmp(void *priv, const struct list_head *a, const struct list_head *b)
 {
 	struct iova_count_info *ia, *ib;
 
