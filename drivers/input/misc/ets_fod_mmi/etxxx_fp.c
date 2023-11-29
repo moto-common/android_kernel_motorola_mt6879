@@ -1163,7 +1163,6 @@ static int egisfp_fb_callback(struct notifier_block *nb, unsigned long val, void
 	struct fb_event *evdata = data;
 	unsigned int blank;
 	char *envp[2];
-	int ret;
 	if (val != FB_EVENT_BLANK)
 	{
 		return 0;
@@ -1191,7 +1190,7 @@ static int egisfp_fb_callback(struct notifier_block *nb, unsigned long val, void
 	}
 	INFO_PRINT(" %s : screen_onoff = %d \n", __func__, egis_dev->screen_onoff);
 	envp[1] = NULL;
-	ret = kobject_uevent_env(&egis_dev->dd->dev.kobj, KOBJ_CHANGE, envp);
+	kobject_uevent_env(&egis_dev->dd->dev.kobj, KOBJ_CHANGE, envp);
 	return NOTIFY_OK;
 }
 // Register FB notifier ---
