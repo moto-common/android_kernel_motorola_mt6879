@@ -942,12 +942,11 @@ static int aw869x_read_f0(struct aw_haptic *aw_haptic)
 static void aw869x_read_beme(struct aw_haptic *aw_haptic)
 {
 	uint8_t reg_val = 0;
-	int ret = 0;
 
-	ret = haptic_hv_i2c_reads(aw_haptic, AW869X_REG_WAIT_VOL_MP, &reg_val,
+	haptic_hv_i2c_reads(aw_haptic, AW869X_REG_WAIT_VOL_MP, &reg_val,
 				  AW_I2C_BYTE_ONE);
 	aw_haptic->max_pos_beme = (reg_val << 0);
-	ret = haptic_hv_i2c_reads(aw_haptic, AW869X_REG_WAIT_VOL_MN, &reg_val,
+	haptic_hv_i2c_reads(aw_haptic, AW869X_REG_WAIT_VOL_MN, &reg_val,
 				  AW_I2C_BYTE_ONE);
 	aw_haptic->max_neg_beme = (reg_val << 0);
 	aw_info("max_pos_beme=%d", aw_haptic->max_pos_beme);

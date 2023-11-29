@@ -865,7 +865,7 @@ static ssize_t show_global_state(const struct cluster_data *state, char *buf)
 				"\tOnline: %u\n", cpu_online(c->cpu));
 		count += snprintf(buf + count, PAGE_SIZE - count,
 				"\tPaused: %u\n",
-				(cpu_online(c->cpu) & !cpu_active(c->cpu)));
+				(cpu_online(c->cpu) && !cpu_active(c->cpu)));
 		count += snprintf(buf + count, PAGE_SIZE - count,
 				"\tPaused by core_ctl: %u\n", c->paused_by_cc);
 		count += snprintf(buf + count, PAGE_SIZE - count,

@@ -1418,14 +1418,13 @@ static DEVICE_ATTR(reg_addr, 0664, show_reg_addr, store_reg_addr);
 
 static ssize_t show_reg_data(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	int ret;
 	struct bq25980_device *bq = dev_get_drvdata(dev);
 	if (!bq) {
 		pr_err("bq25980 chip not valid\n");
 		return -ENODEV;
 	}
 
-	ret = regmap_read(bq->regmap, bq->reg_addr, &bq->reg_data);;
+	regmap_read(bq->regmap, bq->reg_addr, &bq->reg_data);;
 	return sprintf(buf, "reg addr 0x%08x -> 0x%08x\n", bq->reg_addr, bq->reg_data);
 }
 
