@@ -28,6 +28,7 @@
 #include "uboost.h"
 #include "gbe_common.h"
 
+
 #define CREATE_TRACE_POINTS
 
 #define TARGET_UNLIMITED_FPS 240
@@ -40,7 +41,6 @@ enum FPSGO_NOTIFIER_PUSH_TYPE {
 	FPSGO_NOTIFIER_BQID				= 0x04,
 	FPSGO_NOTIFIER_VSYNC				= 0x05,
 	FPSGO_NOTIFIER_SWAP_BUFFER          = 0x06,
-	FPSGO_NOTIFIER_SBE_RESCUE           = 0x07,
 };
 
 /* TODO: use union*/
@@ -63,8 +63,6 @@ struct FPSGO_NOTIFIER_PUSH_TAG {
 
 	int dfrc_fps;
 
-	int enhance;
-
 	struct list_head queue_list;
 };
 
@@ -77,10 +75,6 @@ static int gpu_boost_enable_camera;
 static int perfserv_ta;
 
 int powerhal_tid;
-
-#if !IS_ENABLED(CONFIG_ARM64)
-int cap_ready;
-#endif
 
 void (*rsu_cpufreq_notifier_fp)(int cluster_id, unsigned long freq);
 
@@ -116,14 +110,6 @@ static void fpsgo_notifier_wq_cb_swap_buffer(int pid)
 		return;
 
 	fpsgo_update_swap_buffer(pid);
-}
-
-static void fpsgo_notifier_wq_cb_sbe_rescue(int pid, int start, int enhance)
-{
-	FPSGO_LOGI("[FPSGO_CB] sbe_rescue: %d\n", pid);
-	if (!fpsgo_is_enable())
-		return;
-	fpsgo_sbe_rescue_traverse(pid, start, enhance);
 }
 
 static void fpsgo_notifier_wq_cb_dfrc_fps(int dfrc_fps)
@@ -292,9 +278,6 @@ static void fpsgo_notifier_wq_cb(void)
 	case FPSGO_NOTIFIER_SWAP_BUFFER:
 		fpsgo_notifier_wq_cb_swap_buffer(vpPush->pid);
 		break;
-	case FPSGO_NOTIFIER_SBE_RESCUE:
-		fpsgo_notifier_wq_cb_sbe_rescue(vpPush->pid, vpPush->enable, vpPush->enhance);
-		break;
 	default:
 		FPSGO_LOGE("[FPSGO_CTRL] unhandled push type = %d\n",
 				vpPush->ePushType);
@@ -334,7 +317,6 @@ void fpsgo_notify_qudeq(int qudeq,
 
 	FPSGO_LOGI("[FPSGO_CTRL] qudeq %d-%d, id %llu pid %d\n",
 		qudeq, startend, id, pid);
-
 	if (!fpsgo_is_enable())
 		return;
 
@@ -362,12 +344,6 @@ void fpsgo_notify_qudeq(int qudeq,
 	vpPush->identifier = id;
 
 	fpsgo_queue_work(vpPush);
-#if !IS_ENABLED(CONFIG_ARM64)
-	if (!cap_ready) {
-		fbt_update_pwd_tbl();
-		cap_ready = 1;
-	}
-#endif
 }
 void fpsgo_notify_connect(int pid,
 		int connectedAPI, unsigned long long id)
@@ -377,7 +353,6 @@ void fpsgo_notify_connect(int pid,
 	FPSGO_LOGI(
 		"[FPSGO_CTRL] connect pid %d, id %llu, API %d\n",
 		pid, id, connectedAPI);
-
 	vpPush =
 		(struct FPSGO_NOTIFIER_PUSH_TAG *)
 		fpsgo_alloc_atomic(sizeof(struct FPSGO_NOTIFIER_PUSH_TAG));
@@ -511,37 +486,6 @@ void fpsgo_notify_swap_buffer(int pid)
 	fpsgo_queue_work(vpPush);
 }
 
-void fpsgo_notify_sbe_rescue(int pid, int start, int enhance)
-{
-	struct FPSGO_NOTIFIER_PUSH_TAG *vpPush;
-
-	FPSGO_LOGI("[FPSGO_CTRL] sbe_rescue\n");
-
-	if (!fpsgo_is_enable())
-		return;
-
-	vpPush = (struct FPSGO_NOTIFIER_PUSH_TAG *)
-		fpsgo_alloc_atomic(sizeof(struct FPSGO_NOTIFIER_PUSH_TAG));
-
-	if (!vpPush) {
-		FPSGO_LOGE("[FPSGO_CTRL] OOM\n");
-		return;
-	}
-
-	if (!kfpsgo_tsk) {
-		FPSGO_LOGE("[FPSGO_CTRL] NULL WorkQueue\n");
-		fpsgo_free(vpPush, sizeof(struct FPSGO_NOTIFIER_PUSH_TAG));
-		return;
-	}
-
-	vpPush->ePushType = FPSGO_NOTIFIER_SBE_RESCUE;
-	vpPush->pid = pid;
-	vpPush->enable = start;
-	vpPush->enhance = enhance;
-
-	fpsgo_queue_work(vpPush);
-}
-
 void fpsgo_get_fps(int *pid, int *fps)
 {
 	//int pid = -1, fps = -1;
@@ -658,7 +602,6 @@ void fpsgo_switch_enable(int enable)
 int fpsgo_is_force_enable(void)
 {
 	int temp_onoff;
-
 	mutex_lock(&notify_lock);
 	temp_onoff = fpsgo_force_onoff;
 	mutex_unlock(&notify_lock);
@@ -754,7 +697,7 @@ static void fpsgo_cpu_frequency_tracer(void *ignore, unsigned int frequency, uns
 
 	if (policy) {
 		fpsgo_notify_cpufreq(cluster, frequency);
-		//cpufreq_cpu_put(policy);
+		cpufreq_cpu_put(policy);
 	}
 }
 
@@ -775,11 +718,7 @@ static void lookup_tracepoints(struct tracepoint *tp, void *ignore)
 	}
 }
 
-#if IS_BUILTIN(CONFIG_MTK_FPSGO_V3)
-static void tracepoint_cleanup(void)
-#else
 void tracepoint_cleanup(void)
-#endif
 {
 	int i;
 
@@ -818,10 +757,6 @@ static int __init fpsgo_init(void)
 {
 	int i;
 	int ret;
-
-#if !IS_ENABLED(CONFIG_ARM64)
-	cap_ready = 0;
-#endif
 
 	FPSGO_LOGI("[FPSGO_CTRL] init\n");
 
@@ -878,8 +813,6 @@ fail_reg_cpu_frequency_entry:
 	fpsgo_notify_bqid_fp = fpsgo_notify_bqid;
 
 	fpsgo_notify_swap_buffer_fp = fpsgo_notify_swap_buffer;
-	fpsgo_notify_sbe_rescue_fp = fpsgo_notify_sbe_rescue;
-
 	fpsgo_get_fps_fp = fpsgo_get_fps;
 	fpsgo_get_cmd_fp = fpsgo_get_cmd;
 	fpsgo_get_fstb_active_fp = fpsgo_get_fstb_active;
@@ -891,11 +824,8 @@ fail_reg_cpu_frequency_entry:
 
 	return 0;
 }
-#if IS_BUILTIN(CONFIG_MTK_FPSGO_V3)
-late_initcall(fpsgo_init);
-#else
+
 module_init(fpsgo_init);
-#endif
 module_exit(fpsgo_exit);
 
 MODULE_LICENSE("GPL");

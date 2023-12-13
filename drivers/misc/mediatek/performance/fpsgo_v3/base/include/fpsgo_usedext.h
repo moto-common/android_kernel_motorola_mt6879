@@ -20,7 +20,6 @@ extern void (*fpsgo_get_fps_fp)(int *pid, int *fps);
 extern void (*fpsgo_get_cmd_fp)(int *cmd, int *value1, int *value2);
 extern int (*fpsgo_get_fstb_active_fp)(long long time_diff);
 extern int (*fpsgo_wait_fstb_active_fp)(void);
-extern void (*fpsgo_notify_sbe_rescue_fp)(int pid, int start, int enhance);
 
 extern void (*fpsgo_notify_nn_job_begin_fp)(unsigned int tid,
 		unsigned long long mid);
@@ -50,6 +49,5 @@ extern int (*xgff_frame_startend_fp)(unsigned int startend,
 		unsigned int *pdeplist);
 extern void (*xgff_frame_getdeplist_maxsize_fp)
 		(unsigned int *pdeplistsize);
-extern void (*xgff_frame_min_cap_fp)(unsigned int min_cap);
 
 #endif
