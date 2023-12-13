@@ -82,7 +82,6 @@ struct fpsgo_loading {
 	int prefer_type;
 	int policy;
 	long nice_bk;
-	int action;
 };
 
 struct fbt_thread_blc {
@@ -98,8 +97,6 @@ struct fbt_boost_info {
 	int target_fps;
 	unsigned long long target_time;
 	unsigned int last_blc;
-	unsigned int last_normal_blc;
-	unsigned int sbe_rescue;
 
 	/* adjust loading */
 	int loading_weight;
@@ -130,9 +127,6 @@ struct fbt_boost_info {
 	int enq_raw[QUOTA_MAX_SIZE];
 	int enq_sum;
 	int enq_avg;
-	int deq_raw[QUOTA_MAX_SIZE];
-	int deq_sum;
-	int deq_avg;
 
 	/* GCC */
 	int gcc_quota;
@@ -169,7 +163,6 @@ struct render_info {
 	int frame_type;
 	int hwui;
 	int ux;
-	int video;
 
 	/*render queue/dequeue/frame time info*/
 	unsigned long long t_enqueue_start;
@@ -192,7 +185,6 @@ struct render_info {
 	unsigned long long dep_loading_ts;
 	unsigned long long linger_ts;
 	long long last_sched_runtime;
-	int avg_freq;
 
 	/*TODO: EARA mid list*/
 	unsigned long long mid;
@@ -215,12 +207,6 @@ struct BQ_id {
 
 struct hwui_info {
 	int pid;
-	struct rb_node entry;
-};
-
-struct video_info {
-	int pid;
-	unsigned int count_instance;
 	struct rb_node entry;
 };
 
@@ -278,7 +264,6 @@ int fpsgo_base_is_finished(struct render_info *thr);
 int fpsgo_update_swap_buffer(int pid);
 void fpsgo_sentcmd(int cmd, int value1, int value2);
 void fpsgo_ctrl2base_get_pwr_cmd(int *cmd, int *value1, int *value2);
-int fpsgo_sbe_rescue_traverse(int pid, int start, int enhance);
 
 int init_fpsgo_common(void);
 
@@ -312,11 +297,6 @@ enum FPSGO_RENDER_INFO_HWUI {
 	RENDER_INFO_HWUI_UNKNOWN = 0,
 	RENDER_INFO_HWUI_TYPE = 1,
 	RENDER_INFO_HWUI_NONE = 2,
-};
-
-enum FPSGO_RENDER_INFO_VIDEO {
-	RENDER_INFO_VIDEO_NONE = 0,
-	RENDER_INFO_VIDEO_TYPE = 1,
 };
 
 #endif
