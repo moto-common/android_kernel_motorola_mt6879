@@ -22,7 +22,6 @@ ccflags-y += \
         -I$(srctree)/kernel/ \
         -I$(srctree)/drivers/misc/mediatek/sched/ \
         -I$(srctree)/drivers/misc/mediatek/include/mt-plat/ \
-        -I$(srctree)/drivers/thermal/mediatek/ \
         -I$(GBE_TOP)/ \
 
 subdir-ccflags-y += \
@@ -37,12 +36,8 @@ subdir-ccflags-y += \
         -I$(srctree)/kernel/ \
         -I$(srctree)/drivers/misc/mediatek/sched/ \
         -I$(srctree)/drivers/misc/mediatek/include/mt-plat/ \
-        -I$(srctree)/drivers/thermal/mediatek/ \
         -I$(GBE_TOP)/ \
 
-ifneq ($(strip $(CONFIG_MTK_SPM_V4)),)
-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/vcorefs_v3/
-endif
 
 #fpsgo_main
 MTK_FPSGO_MAIN += fpsgo_main.o
