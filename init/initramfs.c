@@ -14,6 +14,8 @@
 #include <linux/namei.h>
 #include <linux/init_syscalls.h>
 
+extern void bootprof_log_boot(char *str);
+
 static ssize_t __init xwrite(struct file *file, const char *p, size_t count,
 		loff_t *pos)
 {
@@ -484,8 +486,12 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 		decompress = decompress_method(buf, len, &compress_name);
 		pr_debug("Detected %s compressed data\n", compress_name);
 		if (decompress) {
-			int res = decompress(buf, len, NULL, flush_buffer, NULL,
+			int res;
+			// Measure decompression time to bootprof
+			bootprof_log_boot("Start Decompression!");
+			res = decompress(buf, len, NULL, flush_buffer, NULL,
 				   &my_inptr, error);
+			bootprof_log_boot("Finish Decompression!");
 			if (res)
 				error("decompressor failed");
 		} else if (compress_name) {
