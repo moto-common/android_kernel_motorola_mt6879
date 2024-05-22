@@ -29,7 +29,7 @@
 #include <linux/debugfs.h>
 #endif
 #include <linux/mm.h>
-#include <linux/memory_group_manager.h>
+#include "../../../gpu/arm/midgard/include/linux/memory_group_manager.h"
 
 #if (KERNEL_VERSION(4, 20, 0) > LINUX_VERSION_CODE)
 static inline vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma,
