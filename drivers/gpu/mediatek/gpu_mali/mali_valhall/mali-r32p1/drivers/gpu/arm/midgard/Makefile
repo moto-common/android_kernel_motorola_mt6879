@@ -175,7 +175,6 @@ endif
 #
 # Configurations
 #
-
 # *** MTK ***
 $(info *GPU [mtk-Kbuild] src = $(src))
 $(info *GPU [mtk-Kbuild] srctree = $(srctree))
