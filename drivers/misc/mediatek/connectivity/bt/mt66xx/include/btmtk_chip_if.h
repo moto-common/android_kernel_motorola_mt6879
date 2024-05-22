@@ -13,7 +13,7 @@
 #elif defined(CHIP_IF_UART)
 #include "btmtk_uart.h"
 #elif defined(CHIP_IF_BTIF)
-#include "btmtk_btif.h"
+#include "btif/btmtk_btif.h"
 #define CFG_SUPPORT_BT_DL_WIFI_PATCH    0
 #define CFG_SUPPORT_DVT                 0
 #define CFG_SUPPORT_BLUEZ               0
@@ -27,7 +27,7 @@
 #elif (CONNAC20_CHIPID == 6983)
 	#include "platform_mt6983.h"
 #elif (CONNAC20_CHIPID == 6879)
-	#include "platform_mt6879.h"
+	#include "btif/platform_mt6879.h"
 #elif (CONNAC20_CHIPID == 6895)
 	#include "platform_mt6895.h"
 #elif (CONNAC20_CHIPID == 6886)
