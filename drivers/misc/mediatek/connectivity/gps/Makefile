@@ -63,16 +63,20 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/include
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/include/clkbuf_v1
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/include/clkbuf_v1/$(MTK_PLATFORM)
 ccflags-y += -I$(srctree)/drivers/devfreq
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/conn_drv/connv2/debug_utility/include
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/conninfra/conn_drv/connv2/debug_utility/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/gps/fw_log/inc
 ###############################################################################
 
 MODULE_NAME := gps_drv
 obj-m += $(MODULE_NAME).o
 
 GPS_DRV_CONTROL_LNA := n
-GPS_DL_SUPPORT := n
+GPS_DL_SUPPORT := y
 GPS_DL_HAS_MOCK := n
-GPS_DL_HAS_CONNINFRA_DRV := n
+GPS_DL_HAS_CONNINFRA_DRV := y
 GPS_SRC_FOLDER := $(srctree)/drivers/misc/mediatek/connectivity/gps
+GPS_DL_PLATFORM := v050
 
 ifeq ($(CONFIG_ARCH_MTK_PROJECT),"k6833v1_64_swrgo")
 ccflags-y += -DCONFIG_GPSL5_SUPPORT
@@ -93,10 +97,6 @@ endif
 ifeq ($(CONFIG_MACH_MT6877),y)
 GPS_DL_SUPPORT := y
 GPS_DL_PLATFORM := v030
-endif
-ifeq ($(CONFIG_MACH_MT6879),y)
-GPS_DL_SUPPORT := y
-GPS_DL_PLATFORM := v050
 endif
 ifeq ($(CONFIG_MACH_MT6885),y)
 GPS_DL_SUPPORT := y
@@ -146,6 +146,9 @@ ccflags-y += -I$(GPS_SRC_FOLDER)/data_link/hal/inc
 ccflags-y += -I$(GPS_SRC_FOLDER)/data_link/hw/inc
 ccflags-y += -I$(GPS_SRC_FOLDER)/data_link_mock/mock/inc
 
+$(MODULE_NAME)-objs += fw_log_gps.o
+$(MODULE_NAME)-objs += fw_log/fw_log_gps_lib.o
+
 $(MODULE_NAME)-objs += data_link/gps_dl_module.o
 $(MODULE_NAME)-objs += data_link/gps_dl_context.o
 
@@ -155,6 +158,8 @@ $(MODULE_NAME)-objs += data_link/lib/gps_dl_hist_rec.o
 $(MODULE_NAME)-objs += data_link/lib/gps_dl_hist_rec2.o
 $(MODULE_NAME)-objs += data_link/lib/gps_dl_time_tick.o
 $(MODULE_NAME)-objs += data_link/lib/gps_dl_name_list.o
+$(MODULE_NAME)-objs += data_link/lib/gps_dl_dma_buf.o
+$(MODULE_NAME)-objs += data_link/lib/gps_dl_dma_buf_lock.o
 
 $(MODULE_NAME)-objs += data_link/hw/gps_dl_hw_conn_infra.o
 $(MODULE_NAME)-objs += data_link/hw/gps_dl_hw_semaphore.o
@@ -193,11 +198,13 @@ $(MODULE_NAME)-objs += data_link/linux/gps_dl_emi.o
 $(MODULE_NAME)-objs += data_link/linux/gps_dl_ctrld.o
 $(MODULE_NAME)-objs += data_link/linux/gps_dl_procfs.o
 $(MODULE_NAME)-objs += data_link/linux/gps_dl_osal.o
+$(MODULE_NAME)-objs += data_link/linux/gps_dl_iomem_dump.o
 
 $(MODULE_NAME)-objs += data_link/plat/$(GPS_DL_PLATFORM)/gps_dl_hw_dep_bgf.o
 $(MODULE_NAME)-objs += data_link/plat/$(GPS_DL_PLATFORM)/gps_dl_hw_dep_gps.o
 $(MODULE_NAME)-objs += data_link/plat/$(GPS_DL_PLATFORM)/gps_dl_hw_dep_debug.o
 $(MODULE_NAME)-objs += data_link/plat/$(GPS_DL_PLATFORM)/gps_dl_hw_dep_met2_0.o
+$(MODULE_NAME)-objs += data_link/plat/$(GPS_DL_PLATFORM)/gps_dl_hw_dep_dma.o
 
 ifeq ($(GPS_DL_HAS_MOCK),y)
 $(MODULE_NAME)-objs += data_link_mock/mock/gps_mock_mvcd.o
