@@ -320,7 +320,7 @@ int thrmProtLvHandler(struct ADAPTER *prAdapter, uint8_t ucLevel)
 
 	prAdapter->rThrmProtCfg.ucLevel = ucLevel;
 
-	if (ucOrigLevel == CONN_PWR_THR_LV_MAX)
+	if (ucOrigLevel == CONN_PWR_LOW_BATTERY_MAX)
 		return 0;
 
 	if (prAdapter->rThrmProtCfg.ucCurrDutyCfg == 0) {
@@ -360,7 +360,7 @@ void thrmInit(struct ADAPTER *prAdapter)
 	DBGLOG(NIC, INFO, "Radio off temp[%d] Duty control temp[%d]\n",
 		prWifiVar->i4ThrmRadioOffTemp, prWifiVar->i4ThrmCtrlTemp);
 
-	prAdapter->rThrmProtCfg.ucLevel = CONN_PWR_THR_LV_MAX;
+	prAdapter->rThrmProtCfg.ucLevel = CONN_PWR_LOW_BATTERY_MAX;
 
 	/* Register power level handler */
 	kalPwrLevelHdlrRegister(prAdapter, thrmProtLvHandler);
