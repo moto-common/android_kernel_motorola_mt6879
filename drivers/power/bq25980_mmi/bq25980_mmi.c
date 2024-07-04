@@ -479,19 +479,6 @@ static struct reg_default sc8541_reg_defs[] = {
 	{BQ25980_CHRGR_CTRL_6, 0x0},
 };
 
-static void dump_all_reg(struct bq25980_device *bq)
-{
-	int ret;
-	unsigned int val;
-	int addr;
-
-	for (addr = 0x00; addr <= 0x37; addr++) {
-		ret = regmap_read(bq->regmap, addr, &val);
-		if (!ret)
-			dev_err(bq->dev, "%s_dump_registe:Reg[%02X] = 0x%02X\n", bq->model_name, addr, val);
-	}
-}
-
 static int bq25980_set_adc_enable(struct bq25980_device *bq, bool enable)
 {
 	int ret;
@@ -2139,7 +2126,7 @@ static int bq25980_probe(struct i2c_client *client,
 	}
 
 	bq25980_create_device_node(bq->dev);
-	dump_all_reg(bq);
+	//dump_all_reg(bq);
 	printk("-------bq25980 driver probe success--------%s\n",dev_name(&client->dev));
 	return 0;
 free_psy:
