@@ -9,17 +9,12 @@
 #include <linux/string.h>
 
 static const char * const task_name[] = {
-        "com.miui.home",
         "ndroid.systemui",
         "surfaceflinger",
         "cameraserver",
-        "rsonalassistant",
         "droid.launcher3",
 };
 static const char *RenderThread = "RenderThread";
-static const char *passBlur = "passBlur";
-static const char *cameraserver_C3Dev = "C3Dev-";
-static const char *cameraserver_ReqQ = "-ReqQ";
 
 // 内核优先级与java层优先级转换
 static int to_userspace_prio(int policy, int kernel_priority) {
@@ -52,17 +47,6 @@ static bool set_binder_rt_task(struct binder_transaction *t) {
 		&& (strncmp(t->to_proc->tsk->comm, task_name[2], strlen(task_name[2])) == 0)) {
 		return true;
 	}
-
-	if ((strncmp(t->from->task->group_leader->comm, task_name[2], strlen(task_name[2])) == 0)
-		&& (strncmp(t->from->task->comm, passBlur, strlen(passBlur)) == 0)) {
-		return true;
-	}
-
-        if ((strncmp(t->from->task->group_leader->comm, task_name[3], strlen(task_name[3])) == 0)
-                && (strncmp(t->from->task->comm, cameraserver_C3Dev, strlen(cameraserver_C3Dev)) == 0)
-                && (strstr(t->from->task->comm, cameraserver_ReqQ) != NULL)) {
-                return true;
-        }
 
         if (t->from->task->pid == t->from->task->tgid) {
                 for(i = 0; i < sizeof(task_name)/sizeof(task_name[0]); i++) {
